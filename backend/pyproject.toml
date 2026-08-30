@@ -1,0 +1,5 @@
+[tool.pytest.ini_options]
+# Make `app` importable regardless of how pytest is invoked
+# (`pytest` in CI vs `python -m pytest` locally), and keep tests here.
+pythonpath = ["."]
+testpaths = ["tests"]
