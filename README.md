@@ -37,7 +37,7 @@ path — the same provider-abstraction pattern you would use in a real system.
 |---|---|---|
 | 1 ✅ | Application + local Docker Compose stack | `backend/`, `frontend/`, `docker-compose.yml` |
 | 2 ✅ | CI: automated tests on every push | `.github/workflows/ci.yml` |
-| 3 | Packaging: build & publish Docker images (GHCR) | CI job to be added |
+| 3 ✅ | Packaging: build & publish Docker images to GHCR | `.github/workflows/publish.yml` |
 | 4 | Config & secrets management (env → Key Vault) | `app/config.py`, `.env.example` |
 | 5 | Deploy to an Azure VM (same compose stack, TLS, networking) | Terraform, stage 5 |
 | 6 | Deploy to Azure Container Apps (scale-to-zero) | Terraform, stage 6 |

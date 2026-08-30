@@ -191,6 +191,34 @@ If tests fail after a change: they run with the fake provider and stubbed queue,
 
 ---
 
+## 6. Run from published images (no build)
+
+Every merge to `main` publishes both images to GHCR (`.github/workflows/publish.yml`,
+tagged `latest` + `sha-<commit>`). A server can then run the stack without cloning or
+building:
+
+```bash
+export OWNER=jnaveen-ds
+export TAG=latest   # or a specific sha-<commit> for a pinned deploy
+curl -s "https://ghcr.io/token?scope=repository:${OWNER}/feedback-analyzer-backend:pull" | jq -r .token > /tmp/ght
+docker network create appnet >/dev/null
+
+docker run -d --name db --network appnet -e POSTGRES_USER=app -e POSTGRES_PASSWORD=app \
+  -e POSTGRES_DB=feedback -v pgdata:/var/lib/postgresql/data postgres:16-alpine
+docker run -d --network appnet redis:7-alpine
+docker run -d --network appnet -p 8000:8000 \
+  -e DATABASE_URL=postgresql+psycopg2://app:app@db:5432/feedback \
+  -e REDIS_URL=redis://redis:6379/0 -e LLM_PROVIDER=fake \
+  ghcr.io/${OWNER}/feedback-analyzer-backend:$TAG
+docker run -d --name worker --network appnet --entrypoint celery \
+  ghcr.io/${OWNER}/feedback-analyzer-backend:$TAG \
+  -A app.celery_app.celery_app worker --loglevel=info
+docker run -d --network appnet -p 8080:80 ghcr.io/${OWNER}/feedback-analyzer-frontend:$TAG
+```
+
+(Images are public; for private ones, `docker login ghcr.io` first.) This is the
+deployment primitive the later stages automate: pin `TAG` to a sha for rollbacks.
+
 ## Troubleshooting
 
 | # | Symptom | Likely cause | Check / fix |

@@ -122,6 +122,7 @@ frontend/
 root:
 ├── docker-compose.yml        # the whole stack for local dev (the "production topology, free")
 ├── .github/workflows/ci.yml  # CI: tests + typecheck on every push/PR
+├── .github/workflows/publish.yml  # builds & pushes both images to GHCR on main
 ├── .env.example              # documents every env var, no real secrets ever
 └── .gitignore                # keeps .env, node_modules, venvs, tfstate out of git
 ```
