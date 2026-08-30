@@ -33,7 +33,7 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Metadata (tags: latest + sha)
+      - name: "Compute tags: latest + sha"
         id: meta
         uses: docker/metadata-action@v5
         with:
