@@ -1,0 +1,65 @@
+# Local development stack: identical topology to the future Azure deployment
+# (API + worker + database + queue + static frontend), but 100% free.
+#
+#   frontend  -> http://localhost:8080
+#   API docs  -> http://localhost:8000/docs
+
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: app
+      POSTGRES_PASSWORD: app
+      POSTGRES_DB: feedback
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U app -d feedback"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  api:
+    build: ./backend
+    environment: &backend_env
+      DATABASE_URL: postgresql+psycopg2://app:app@db:5432/feedback
+      REDIS_URL: redis://redis:6379/0
+      LLM_PROVIDER: fake          # flip to "azure" + add the AZURE_* vars to try real calls
+      # AZURE_OPENAI_ENDPOINT:
+      # AZURE_OPENAI_API_KEY:
+      # AZURE_OPENAI_DEPLOYMENT: gpt-5.4-mini
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  worker:
+    build: ./backend
+    command: celery -A app.celery_app.celery_app worker --loglevel=info --concurrency=2
+    environment: *backend_env
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "8080:80"
+    depends_on:
+      - api
+
+volumes:
+  pgdata:

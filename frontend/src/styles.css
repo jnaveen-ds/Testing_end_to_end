@@ -1,0 +1,17 @@
+* { box-sizing: border-box; }
+body { margin: 0; font-family: system-ui, sans-serif; background: #f5f6fa; color: #222; }
+.app { max-width: 640px; margin: 3rem auto; padding: 0 1rem; }
+h1 { font-size: 1.5rem; }
+.hint { color: #666; font-size: 0.9rem; }
+textarea { width: 100%; padding: 0.75rem; font: inherit; border: 1px solid #ccc; border-radius: 8px; }
+button { margin-top: 0.75rem; padding: 0.6rem 1.4rem; font: inherit; border: 0;
+  border-radius: 8px; background: #2563eb; color: #fff; cursor: pointer; }
+button:disabled { opacity: 0.5; cursor: default; }
+.result { margin-top: 1.5rem; padding: 1rem; background: #fff; border: 1px solid #e2e2e2; border-radius: 8px; }
+.status { font-weight: 700; text-transform: uppercase; font-size: 0.8rem; }
+.status.completed { color: #15803d; }
+.status.running, .status.pending { color: #b45309; }
+.status.failed { color: #b91c1c; }
+.usage { color: #666; font-size: 0.85rem; }
+.error { color: #b91c1c; }
+code { background: #eef; padding: 0 4px; border-radius: 4px; }
