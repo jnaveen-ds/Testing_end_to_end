@@ -86,7 +86,7 @@ Terraform + CI so the pipeline can repeat it.
 - Container Apps idle at scale-0 ≈ $0; PostgreSQL B1ms inside the free allowance;
   Key Vault ≈ cents; Log Analytics capped by short retention.
 - Destroy same-day = the big burn risks (forgotten VM/AKS) can't accumulate.
-- Expected spend: **$20–60 of $200**.
+- Expected spend: **~$8–15 of $200** (per-day model in `docs/Learning_Tracker.xlsx` → Day Cost Plan; the $20–60 earlier figure was the pre-refinement buffer).
 
 ## What we deliberately skip (and why that's OK)
 

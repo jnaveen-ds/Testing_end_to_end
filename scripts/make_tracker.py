@@ -34,11 +34,11 @@ DAYS = [
      "Terraform (azurerm)",
      "Verify TF-created RG in portal; read the plan output line by line",
      "terraform init; plan -out; apply; state list; destroy", "1h"),
-    (6, "2026-09-04", "IaC", "Key Vault + secret entirely in Terraform",
+    (6, "2026-09-05", "IaC", "Key Vault + secret entirely in Terraform",
      "Key Vault via TF",
      "Compare portal form fields with TF resource attributes",
      "terraform apply; terraform destroy", "1h"),
-    (7, "2026-09-04", "Integration", "App reads config from Key Vault; OIDC app ready for GitHub",
+    (7, "2026-09-05", "Integration", "App reads config from Key Vault; OIDC app ready for GitHub",
      "Key Vault, Entra federated credential",
      "Federated credential subject: repo:jnaveen-ds/Testing_end_to_end:ref:refs/heads/main",
      "az keyvault secret show; verify app /health uses vault config", "1h"),
@@ -62,7 +62,7 @@ DAYS = [
      "GitHub Actions, VM",
      "GitHub environment secrets review (never in git)",
      "git push -> deploy job -> curl public /health", "1h"),
-    (13, "2026-09-11", "Chaos", "Break things on purpose: kill worker, wrong env, full disk; recover",
+    (13, "2026-09-12", "Chaos", "Break things on purpose: kill worker, wrong env, full disk; recover",
      "ops skills",
      "Serial console; boot diagnostics",
      "systemctl; docker; df -h; journalctl", "90m"),
@@ -119,6 +119,41 @@ DAYS = [
      "-", "Screenshot everything first", "final az group delete", "1h"),
 ]
 
+# Per-day cost model. Rates are approximate pay-as-you-go list prices (USD,
+# ~East US; South India similar for these SKUs). Azure free-account allowances
+# (12-month free services) make several of these $0 in practice — shown so you
+# learn the real meter that WOULD bill you. Cumulative assumes strict destroys.
+# (day, services billed, meter/rate note, usage, est $)
+DAY_COSTS = [
+    (1,  "none (local only)",                        "-",                                     "-",      0.00),
+    (2,  "Resource groups (empty)",                  "RGs are free; only contents bill",      "-",      0.00),
+    (3,  "Key Vault",                                "$0.03 per 10,000 operations",           "tiny",   0.01),
+    (4,  "Key Vault",                                "$0.03 per 10,000 operations",           "tiny",   0.01),
+    (5,  "Resource group via Terraform",             "state kept in local file, $0",          "-",      0.00),
+    (6,  "Key Vault via Terraform",                  "$0.03 per 10,000 operations",           "tiny",   0.01),
+    (7,  "Key Vault + Entra app",                    "app registration free",                 "-",      0.01),
+    (8,  "cleanup day (nothing running)",            "-",                                     "-",      0.00),
+    (9,  "VM B2s (24h) + public IP + 30GB disk",     "~$1.00 compute + $0.09 IP + $0.10 disk", "24h",   1.20),
+    (10, "VM day 2 (compose stack + image build)",   "same meters",                           "24h",    1.20),
+    (11, "VM day 3 (TLS / nginx)",                   "same meters",                           "24h",    1.20),
+    (12, "VM day 4 (CI deploys hitting it)",         "compute + egress ~$0.05",               "24h",    1.30),
+    (13, "VM day 5 (chaos tests)",                   "same meters",                           "24h",    1.20),
+    (14, "VM destroyed the evening before",          "resource group deleted",                "0h",     0.00),
+    (15, "Container Apps env + API app (mostly idle)", "~$0.000024/vCPU-s consumption",       "minutes", 0.05),
+    (16, "API + worker, brief scale-up tests",       "consumption plan, 2M requests free",    "minutes", 0.05),
+    (17, "PostgreSQL B1ms + apps",                   "free tier: 750 B1ms hours + 32GB/mo",   "hours",  0.00),
+    (18, "Load test: replicas briefly at 2-3",       "consumption plan",                      "1-2 h",  0.50),
+    (19, "Static Web Apps free tier + egress",       "free tier, ~100GB bandwidth/month free", "1 day", 0.00),
+    (20, "Revision/rollback drills on existing apps", "no new meters",                        "-",      0.05),
+    (21, "everything destroyed",                     "-",                                     "-",     0.00),
+    (22, "AKS evening: 1 node B2ms ~8h + LB",        "~$0.083/hr node + ~$0.01/hr LB",        "8h",     1.00),
+    (23, "App Configuration",                        "free tier: 1k requests/day",            "tiny",   0.01),
+    (24, "App Insights + Log Analytics",             "first 5GB ingestion/month free",        "MBs",    0.00),
+    (25, "pipeline reruns on existing resources",    "no new meters",                         "-",      0.05),
+    (26, "finops sweep (nothing new)",               "-",                                     "-",      0.00),
+    (27, "write-up day (DB kept only if free tier)", "B1ms beyond allowance = ~$0.41/day",    "-",      0.41),
+]
+
 DEPLOYMENTS = [
     (1, "Local compose stack (5 containers)", "Docker Compose", "Day 1", "keep (local)"),
     (2, "Key Vault-backed app configuration", "Key Vault + RBAC", "Day 7", "vault may stay (~$0)"),
@@ -155,30 +190,31 @@ def main():
         ("Azure / DevOps Learning Tracker", ""),
         ("App", "Feedback Analyzer (FastAPI + Celery + React) - one app, many deployments"),
         ("Window", "Aug 31 - Sep 27 2026, ~1 h/day (Day 22 AKS = 2 h)"),
-        ("Budget", "$200 trial credit; expected spend $20-60; destroy same-day"),
+        ("Budget", "$200 trial credit; planned spend ~$8-15 (see Day Cost Plan); destroy same-day"),
         ("Golden rule", "A day is Done only when Destroyed? = Yes (except keep-listed items)"),
         ("Your role", "Portal clicks, az commands, terraform plan review + apply, verification"),
         ("Agent's job", "TF files + exact commands prepared before each session; docs updated"),
         ("Docs", "docs/LEARNING_PLAN.md · docs/DAILY_PLAYBOOK.md · docs/RUNBOOK.md"),
-        ("Website deployment", "Day 19 (Fri Sep 19): React UI on Azure Static Web Apps, its own URL"),
-        ("Deployments target", "10 tracked deployments - see 'Deployments' tab"),
+        ("Website deployment", "Day 19 (Sat Sep 19): React UI on Azure Static Web Apps, its own URL"),
+        ("Deployments target", "10 tracked deployments — see 'Deployments' tab"),
+        ("Cost tab", "'Day Cost Plan' = planned cost per day + cumulative; 'Cost Log' = what you actually spent"),
     ]
     for i, (a, b) in enumerate(lines, 1):
-        ca = ws.cell(row=i, column=1, value=a)
+        ws.cell(row=i, column=1, value=a).font = Font(bold=True, size=14 if i == 1 else 10)
         cb = ws.cell(row=i, column=2, value=b)
         cb.alignment = WRAP
-        ca.font = Font(bold=True, size=14 if i == 1 else 10)
         cb.font = Font(size=10)
     set_widths(ws, [26, 100])
 
-    # ---- Daily Plan ----
+    # ---------- Daily Plan ----------
     ws = wb.create_sheet("Daily Plan")
     header(ws, ["Day", "Date", "Dow", "Phase", "Goal", "Azure services",
-                "Portal steps", "CLI commands (key)", "Time", "Status", "Cost $", "Destroyed?", "Notes"])
+                "Portal steps", "CLI commands (key)", "Time", "Status", "Cost est. $", "Destroyed?", "Notes"])
+    cost_by_day = {dc[0]: dc[4] for dc in DAY_COSTS}
     for r, (day, date, phase, goal, services, portal, cli, t) in enumerate(DAYS, 2):
         d = dt.date.fromisoformat(date)
         vals = [day, date, d.strftime("%a"), phase, goal, services, portal, cli, t,
-                "Not started", "", "", ""]
+                "Not started", cost_by_day.get(day, ""), "", ""]
         for c, v in enumerate(vals, 1):
             cell = ws.cell(row=r, column=c, value=v)
             cell.font = Font(size=10)
@@ -189,10 +225,44 @@ def main():
     dv2 = DataValidation(type="list", formula1='"Yes,No,-"', allow_blank=True)
     ws.add_data_validation(dv2)
     dv2.add(f"M2:M{len(DAYS) + 1}")
-    set_widths(ws, [5, 11, 6, 12, 34, 24, 38, 38, 6, 12, 8, 11, 22])
+    set_widths(ws, [5, 11, 6, 12, 34, 24, 38, 38, 6, 12, 9, 11, 22])
     ws.freeze_panes = "E2"
 
-    # ---- Deployments ----
+    # ---------- Day Cost Plan ----------
+    ws = wb.create_sheet("Day Cost Plan")
+    header(ws, ["Day", "Date", "Services billed that day", "Meter / rate (approx list price)",
+                "Usage", "Est. cost $", "Cumulative $", "Free-tier status"])
+    date_of = {d0[0]: d0[1] for d0 in DAYS}
+    cumulative = 0.0
+    free_status = [
+        ("static web apps", "Free tier (no charge)"),
+        ("postgresql b1ms", "12-month free allowance covers it"),
+        ("app insights", "First 5GB ingestion/month free"),
+        ("app configuration", "Free tier"),
+        ("key vault", "Operations meter only — effectively free"),
+        ("aks blade", "-"),
+        ("aks evening", "Control plane free; you pay the node"),
+        ("aks", "Control plane free; you pay the node"),
+    ]
+    for r, (day, services, meter, usage, cost) in enumerate(DAY_COSTS, 2):
+        cumulative += cost
+        note = next((txt for key, txt in free_status if key in meter.lower() or key in services.lower()), "")
+        vals = [day, date_of.get(day, ""), services, meter, usage, cost, round(cumulative, 2), note]
+        for c, v in enumerate(vals, 1):
+            cell = ws.cell(row=r, column=c, value=v)
+            cell.font = Font(size=10)
+            cell.alignment = WRAP
+    total_row = len(DAY_COSTS) + 2
+    tc = ws.cell(row=total_row, column=7, value=round(cumulative, 2))
+    tc.font = Font(bold=True, color="C00000")
+    ws.cell(row=total_row, column=6, value="PLANNED TOTAL").font = Font(bold=True)
+    ws.cell(row=total_row + 1, column=1,
+            value="Without free-account allowances the same month would cost roughly $40-70 "
+                  "(Postgres ~$12/mo + SWA Standard + App Insights + more VM/AKS hours).")
+    set_widths(ws, [5, 12, 42, 38, 10, 11, 12, 34])
+    ws.freeze_panes = "A2"
+
+    # ---------- Deployments ----------
     ws = wb.create_sheet("Deployments")
     header(ws, ["#", "Deployment", "Azure services", "Day", "End-state plan", "Status", "Evidence link"])
     for r, (n, what, services, day, plan) in enumerate(DEPLOYMENTS, 2):
@@ -202,14 +272,15 @@ def main():
             cell.alignment = WRAP
     set_widths(ws, [4, 44, 28, 10, 30, 12, 30])
 
-    # ---- Cost Log ----
+    # ---------- Cost Log ----------
     ws = wb.create_sheet("Cost Log")
     header(ws, ["Date", "Resource group", "Service", "Est. cost $", "Actual cost $", "Destroyed?", "Notes"])
-    ws.cell(row=40, column=5, value="TOTAL:").font = Font(bold=True)
+    ws.cell(row=40, column=4, value="TOTAL:").font = Font(bold=True)
+    ws.cell(row=40, column=5, value="=SUM(D2:D39)").font = Font(bold=True)
     ws.cell(row=40, column=6, value="=SUM(E2:E39)").font = Font(bold=True)
     set_widths(ws, [12, 26, 26, 12, 12, 11, 30])
 
-    # ---- Destroy Ritual ----
+    # ---------- Destroy Ritual ----------
     ws = wb.create_sheet("Destroy Ritual")
     steps = [
         "1. SCREENSHOT dashboards first (portfolio evidence)",
