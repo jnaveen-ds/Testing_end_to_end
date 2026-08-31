@@ -3,7 +3,7 @@
 A deliberately small GenAI application (feedback analyzer) used to learn a complete,
 production-style engineering lifecycle end to end — with **$0 default cloud cost**.
 
-**Docs:** [LEARNING_PLAN.md](docs/LEARNING_PLAN.md) — 28-day Azure/DevOps plan to Sep 27 · [RUNBOOK.md](docs/RUNBOOK.md) — running & verifying every component (local, server, pipeline trace) · [ARCHITECTURE.md](docs/ARCHITECTURE.md) — design walkthrough · [INTERVIEW_NOTES.md](docs/INTERVIEW_NOTES.md) — design decisions
+**Docs:** [LEARNING_PLAN.md](docs/LEARNING_PLAN.md) — 28-day plan to Sep 27 · [DAILY_PLAYBOOK.md](docs/DAILY_PLAYBOOK.md) — per-day services, portal steps, CLI commands, destroy ritual · [RUNBOOK.md](docs/RUNBOOK.md) — running & verifying · [ARCHITECTURE.md](docs/ARCHITECTURE.md) — design · [INTERVIEW_NOTES.md](docs/INTERVIEW_NOTES.md) — decisions
 
 ## Architecture
 
