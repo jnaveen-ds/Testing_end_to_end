@@ -58,8 +58,8 @@ Terraform + CI so the pipeline can repeat it.
 | Wed 16 | Add worker app (same image, different command); scale rule 0→3 on queue length | Scale-to-zero, KEDA | Idle = $0 |
 | Thu 17 | Azure PostgreSQL Flexible (B1ms, free tier) + swap in; secrets from Key Vault | Managed data services | E2E on managed stack |
 | Fri 18 | Load test (`hey -c 50 -z 60s`); watch replicas scale in the portal | Autoscaling behavior | Numbers to quote |
-| Sat 19 | Rollback drill: deploy a bad revision, revert it; try traffic splitting | Blue/green, canary basics | Drill done |
-| Sun 20 | Keep only: DB (within free tier) + images. Destroy the rest | — | Cheap idle state |
+| Sat 19 | **WEBSITE deployment**: React UI to Azure Static Web Apps (free tier), wired to the API; optional custom domain | Static hosting, SWA CI | Live public website |
+| Sun 20 | Rollback drill: deploy a bad revision, revert it; traffic split; then destroy all but the DB | Blue/green, canary basics | Drill done |
 
 ## Week 4 (Sep 21–27) — Production behaviors + Kubernetes taste
 
@@ -73,12 +73,12 @@ Terraform + CI so the pipeline can repeat it.
 | Sat 26 | `az resource list` sweep → destroy every remaining RG; cost review | FinOps | Near-zero balance |
 | Sun 27 | Write the story: what you built, every screenshot, costs, incidents — your portfolio doc | Consolidation | Notes doc |
 
-## Deliverables: 8 distinct deployments by Sep 27
+## Deliverables: 9 distinct deployments by Sep 27
 
 1. Local compose stack (you run it)  2. VM + compose + TLS  3. Container Apps API
-4. Container Apps worker with scale-to-zero 5. Managed Postgres/Redis behind Key Vault
-6. AKS (one evening, destroyed same day) 7. Automated deploy with approval + rollback
-8. Load-tested, monitored deployment with alerts
+4. Container Apps worker with scale-to-zero 5. Managed Postgres behind Key Vault
+6. **Website: React UI on Azure Static Web Apps** 7. AKS (one evening, destroyed same day)
+8. Automated deploy with approval + rollback 9. Load-tested + alerting deployment
 
 ## Why this fits $200
 
