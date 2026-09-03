@@ -21,13 +21,29 @@ az configure --defaults location=southindia            # your confirmed region
 
 ---
 
-## Day 1 — Mon Aug 31 · GitHub setup (no Azure)
-**Services:** GitHub only.
-**Portal:** ① Branch protection: Settings → Branches → Add classic rule → pattern `main`
-→ require status checks `backend-tests` + `frontend-build` (strict) + include admins.
-② Packages (your profile → Packages → each package → settings): visibility → Public.
-**Verify:** a new commit shows "checks required" on PRs; package pages show "public".
-**Destroy:** nothing (no cloud resources).
+## Day 1 — Mon Aug 31 · GitHub setup, Azure OIDC, and local verification
+**Services:** GitHub repository and Actions, GHCR, Microsoft Entra ID, Azure RBAC,
+and local Docker Compose. **Cost:** $0.
+
+**Portal:** ① Make the repository public (required for branch-protection enforcement on
+GitHub Free). ② Settings → Branches → Add classic rule → pattern `main` → require a PR,
+strict status checks `backend-tests` + `frontend-build`, and no administrator bypass.
+③ Set both GHCR packages to Public. ④ Register the single-tenant Entra application
+`github-actions-testing-e2e`, add the immutable `main`-branch GitHub federated credential,
+and assign Contributor on the learning subscription. ⑤ Add `AZURE_CLIENT_ID`,
+`AZURE_TENANT_ID`, and `AZURE_SUBSCRIPTION_ID` as GitHub Actions secrets; do not create a
+client secret.
+
+**Local:** `docker compose up --build -d` → verify health, stats, SPA submission, and
+worker completion → `docker compose down -v`.
+
+**Verify:** branch rule lists both exact checks; both package manifests are anonymously
+pullable; the federated credential subject targets `main`; all five local containers run
+and feedback reaches `completed`. **Destroy:** local stack and volume. Keep the $0 Entra
+identity, role assignment, GitHub configuration, and packages for later days.
+
+The exact values, portal paths, commands, evidence, and live completion checklist are in
+[LEARNING_JOURNAL.md § Day 1](LEARNING_JOURNAL.md#day-1--github-governance-azure-oidc-and-first-local-run).
 
 ## Day 2 — Tue Sep 1 · Azure CLI onboarding
 **Services:** CLI only. Nothing deployed.
