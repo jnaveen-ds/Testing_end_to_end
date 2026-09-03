@@ -1,7 +1,9 @@
 # Learning Plan — Azure DevOps in 28 days (to Sep 27)
 
 ~1 hr/day. One small app, many deployments, everything destroyed when done.
-Companion docs: [RUNBOOK.md](RUNBOOK.md), [ARCHITECTURE.md](ARCHITECTURE.md),
+Companion docs: [DAILY_PLAYBOOK.md](DAILY_PLAYBOOK.md) for planned steps,
+[LEARNING_JOURNAL.md](LEARNING_JOURNAL.md) for the work actually performed,
+[RUNBOOK.md](RUNBOOK.md), [ARCHITECTURE.md](ARCHITECTURE.md), and
 [INTERVIEW_NOTES.md](INTERVIEW_NOTES.md).
 
 ---
