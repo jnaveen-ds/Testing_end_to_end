@@ -69,6 +69,15 @@ Configuration:
 Result: changes should go through a branch and pull request; failing or missing CI checks
 block the merge to `main`.
 
+**First-PR lesson:** PR
+[#1](https://github.com/jnaveen-ds/Testing_end_to_end/pull/1) initially showed
+“Review required” even though both CI checks passed. The branch rule accidentally required
+one approving review, but GitHub does not allow an author to approve their own PR. For
+this single-maintainer learning repository, **Require a pull request** remains enabled
+while **Require approvals** is disabled (zero required approvals). After that correction,
+PR #1 merged successfully with both required checks passing. In a team repository, keep
+at least one independent approval instead.
+
 ### 3. Make GHCR packages public — completed and verified
 
 Package settings:

@@ -298,6 +298,7 @@
           <div class="step-number">2</div>
           <div><h3>Protected <code>main</code></h3><p>Every change now goes through a pull request and green CI.</p>
             <ul><li>Require a pull request before merging</li><li>Require branches to be up to date</li><li>Require <code>backend-tests</code> and <code>frontend-build</code></li><li>Do not allow administrator bypass</li></ul>
+            <div class="callout"><strong>First-PR lesson:</strong> PR #1 was initially blocked by “Review required” although both checks passed. A PR author cannot approve their own work, so this single-maintainer repository uses zero required approvals while still requiring a PR and both CI checks. Teams should retain independent review.</div>
           </div>
         </article>
         <article class="step">
