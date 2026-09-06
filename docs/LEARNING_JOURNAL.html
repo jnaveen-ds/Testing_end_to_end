@@ -359,6 +359,7 @@ gh api repos/jnaveen-ds/Testing_end_to_end \
 
     <section id="local" aria-labelledby="local-title">
       <div class="section-head"><p class="eyebrow" style="color: #667085">Pending</p><h2 id="local-title">Run the five-container application</h2><p>Verify every hop locally before deploying the same topology to Azure.</p></div>
+      <div class="callout warning"><strong>First attempt:</strong> the API/worker build stopped during <code>pip install</code> with <code>CERTIFICATE_VERIFY_FAILED: self-signed certificate in certificate chain</code>. Host Python succeeds because <code>pip-system-certs</code> uses the Windows certificate store, but the isolated Linux build inherits neither that package nor the Windows trust store. The application itself had not started. Do not disable TLS or use pip <code>--trusted-host</code>.</div>
       <div class="two-col">
         <article class="panel"><h3>Start</h3><pre><code>git clone https://github.com/jnaveen-ds/Testing_end_to_end
 cd Testing_end_to_end
@@ -370,6 +371,17 @@ curl http://localhost:8000/stats
 curl -I http://localhost:8080
 docker compose logs --tail=100 worker</code></pre></article>
       </div>
+      <details open>
+        <summary>Safe Day 1 fallback — use the public CI-built images</summary>
+        <div><pre><code>docker compose down -v
+docker pull ghcr.io/jnaveen-ds/feedback-analyzer-backend:latest
+docker pull ghcr.io/jnaveen-ds/feedback-analyzer-frontend:latest
+docker tag ghcr.io/jnaveen-ds/feedback-analyzer-backend:latest testing_end_to_end-api:latest
+docker tag ghcr.io/jnaveen-ds/feedback-analyzer-backend:latest testing_end_to_end-worker:latest
+docker tag ghcr.io/jnaveen-ds/feedback-analyzer-frontend:latest testing_end_to_end-frontend:latest
+docker compose up -d --no-build
+docker compose ps</code></pre><p>This runs the same published artifacts intended for deployment. The durable build fix is to obtain the intercepting organization's CA certificate and trust it inside the build container—not to weaken HTTPS.</p></div>
+      </details>
       <div class="callout"><strong>Expected:</strong> <code>db</code>, <code>redis</code>, <code>api</code>, <code>worker</code>, and <code>frontend</code> are running. Submit feedback in the SPA and confirm <code>pending → completed</code>.</div>
     </section>
 

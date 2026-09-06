@@ -199,6 +199,37 @@ docker compose up --build -d
 docker compose ps
 ```
 
+**First build attempt:** Docker Desktop started correctly and the frontend image reached
+its export step, but the API/worker build stopped at `pip install`. Python reported
+`CERTIFICATE_VERIFY_FAILED: self-signed certificate in certificate chain` while fetching
+from `files.pythonhosted.org`. The application code had not started; HTTPS was being
+re-signed by a proxy, VPN, antivirus, or managed-device certificate that the Linux build
+container did not trust.
+
+The laptop's host Python uses `pip-system-certs`, which allows local pip commands to use
+the Windows certificate store and explains why they can succeed on the same network.
+Docker's Linux build is isolated: it does not inherit the host Python package or Windows
+trust store. Installing `pip-system-certs` on Windows therefore does not modify this image.
+
+Do not use pip's `--trusted-host` or disable TLS verification. The Day 1 safe fallback is
+to run the public images already built and tested by GitHub Actions:
+
+```bash
+docker compose down -v
+docker pull ghcr.io/jnaveen-ds/feedback-analyzer-backend:latest
+docker pull ghcr.io/jnaveen-ds/feedback-analyzer-frontend:latest
+docker tag ghcr.io/jnaveen-ds/feedback-analyzer-backend:latest testing_end_to_end-api:latest
+docker tag ghcr.io/jnaveen-ds/feedback-analyzer-backend:latest testing_end_to_end-worker:latest
+docker tag ghcr.io/jnaveen-ds/feedback-analyzer-frontend:latest testing_end_to_end-frontend:latest
+docker compose up -d --no-build
+docker compose ps
+```
+
+This verifies the same published artifacts intended for deployment. A durable local-build
+fix requires installing the intercepting organization's CA certificate into the build
+container; obtain that certificate from the device/network administrator rather than
+committing a machine-specific certificate or weakening HTTPS.
+
 Expected running services: `db`, `redis`, `api`, `worker`, and `frontend`.
 
 Verify the API and SPA:
