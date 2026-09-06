@@ -146,7 +146,7 @@
     .stat small { color: var(--muted); }
 
     .progress-track { height: 10px; margin-top: .8rem; overflow: hidden; border-radius: 99px; background: #dfe7f1; }
-    .progress-fill { width: 44.44%; height: 100%; border-radius: inherit; background: linear-gradient(90deg, var(--azure), var(--cyan)); }
+    .progress-fill { width: 77.78%; height: 100%; border-radius: inherit; background: linear-gradient(90deg, var(--azure), var(--cyan)); }
 
     .flow { display: grid; grid-template-columns: repeat(4, 1fr); gap: .8rem; }
     .flow-card { position: relative; min-width: 0; padding: 1rem; border-radius: 14px; background: var(--white); border: 1px solid var(--line); }
@@ -263,9 +263,9 @@
     <section id="overview" aria-labelledby="overview-title">
       <div class="stats">
         <article class="stat"><span class="stat-label">Day</span><strong>1 of 28</strong><small>Foundations</small></article>
-        <article class="stat"><span class="stat-label">Completed</span><strong>4 of 9</strong><div class="progress-track" aria-label="Day 1 is 44 percent complete"><div class="progress-fill"></div></div></article>
+        <article class="stat"><span class="stat-label">Completed</span><strong>7 of 9</strong><div class="progress-track" aria-label="Day 1 is 78 percent complete"><div class="progress-fill"></div></div></article>
         <article class="stat"><span class="stat-label">Azure cost today</span><strong>$0.00</strong><small>Outside $200 credit: $0</small></article>
-        <article class="stat"><span class="stat-label">Current task</span><strong>OIDC</strong><small>Add immutable credential</small></article>
+        <article class="stat"><span class="stat-label">Current task</span><strong>Local app</strong><small>Verify and destroy</small></article>
       </div>
       <div class="section-head" style="margin-top: 2.2rem">
         <p class="eyebrow" style="color: var(--azure)">Day 1 objective</p>
@@ -279,8 +279,8 @@
       <div class="flow">
         <article class="flow-card"><span class="badge done">Done</span><strong>1 · Govern</strong><p>Public repo, protected main, required CI.</p></article>
         <article class="flow-card"><span class="badge done">Done</span><strong>2 · Package</strong><p>Public backend and frontend images.</p></article>
-        <article class="flow-card"><span class="badge active">Now</span><strong>3 · Authenticate</strong><p>GitHub OIDC to Microsoft Entra.</p></article>
-        <article class="flow-card"><span class="badge pending">Next</span><strong>4 · Verify & destroy</strong><p>Run five containers, test, remove.</p></article>
+        <article class="flow-card"><span class="badge done">Done</span><strong>3 · Authenticate</strong><p>GitHub OIDC to Microsoft Entra.</p></article>
+        <article class="flow-card"><span class="badge active">Now</span><strong>4 · Verify & destroy</strong><p>Run five containers, test, remove.</p></article>
       </div>
     </section>
 
@@ -311,7 +311,7 @@
     </section>
 
     <section id="oidc" aria-labelledby="oidc-title">
-      <div class="section-head"><p class="eyebrow" style="color: var(--amber)">In progress</p><h2 id="oidc-title">Passwordless Azure authentication</h2><p>GitHub exchanges a short-lived OIDC token for Azure access. No client secret is created.</p></div>
+      <div class="section-head"><p class="eyebrow" style="color: var(--green)">Completed</p><h2 id="oidc-title">Passwordless Azure authentication</h2><p>GitHub exchanges a short-lived OIDC token for Azure access. No client secret is created.</p></div>
       <div class="two-col">
         <article class="panel">
           <h3>Entra application</h3>
@@ -333,7 +333,7 @@
       </div>
 
       <details open>
-        <summary>Current portal step — add the federated credential</summary>
+        <summary>Federated credential — completed</summary>
         <div>
           <p><strong>App registration → Certificates & secrets → Federated credentials → Add credential → GitHub Actions deploying Azure resources</strong></p>
           <p>Keep issuer <code>https://token.actions.githubusercontent.com</code> and audience <code>api://AzureADTokenExchange</code>.</p>
@@ -348,12 +348,12 @@ gh api repos/jnaveen-ds/Testing_end_to_end \
   --jq '{full_name, id, owner_id: .owner.id}'</code></pre></div>
       </details>
       <details>
-        <summary>Next — assign Azure Contributor</summary>
+        <summary>Azure Contributor assignment — completed</summary>
         <div><ol><li><strong>Subscriptions → learning subscription → Access control (IAM)</strong></li><li><strong>Add role assignment → Contributor</strong></li><li>Select <strong>User, group, or service principal</strong></li><li>Choose <code>github-actions-testing-e2e</code>, review, and assign</li></ol><p>Contributor manages resources but cannot grant roles. Cost: $0.</p></div>
       </details>
       <details>
-        <summary>Next — configure GitHub Actions</summary>
-        <div><p><strong>Repository Settings → Secrets and variables → Actions</strong></p><ul><li><code>AZURE_CLIENT_ID</code></li><li><code>AZURE_TENANT_ID</code></li><li><code>AZURE_SUBSCRIPTION_ID</code></li></ul><div class="callout warning">Never add <code>AZURE_CLIENT_SECRET</code>. Never record secret values in documentation or chat.</div></div>
+        <summary>GitHub Actions repository secrets — completed</summary>
+        <div><p><strong>Repository Settings → Secrets and variables → Actions</strong></p><ul><li><code>AZURE_CLIENT_ID</code></li><li><code>AZURE_TENANT_ID</code></li><li><code>AZURE_SUBSCRIPTION_ID</code></li></ul><div class="callout">The learner confirmed all three were saved. The orb token cannot list Actions secret metadata (HTTP 403), and the values were intentionally never requested or inspected.</div><div class="callout warning">Never add <code>AZURE_CLIENT_SECRET</code>. Never record secret values in documentation or chat.</div></div>
       </details>
     </section>
 
@@ -390,9 +390,9 @@ docker compose ps</code></pre><p>The second command must show no running project
           <li class="checked"><code>main</code> requires a PR, an up-to-date branch, <code>backend-tests</code>, and <code>frontend-build</code>, with no administrator bypass</li>
           <li class="checked">Backend and frontend GHCR images are publicly pullable</li>
           <li class="checked">Entra application registration exists</li>
-          <li class="unchecked">Immutable federated credential added</li>
-          <li class="unchecked">Contributor role assigned</li>
-          <li class="unchecked">Three GitHub Actions secrets added</li>
+          <li class="checked">Immutable federated credential added</li>
+          <li class="checked">Contributor role assigned</li>
+          <li class="checked"><code>AZURE_CLIENT_ID</code>, <code>AZURE_TENANT_ID</code>, and <code>AZURE_SUBSCRIPTION_ID</code> saved as repository secrets</li>
           <li class="unchecked">Local feedback flow verified</li>
           <li class="unchecked">Local Compose stack and volume destroyed</li>
         </ul>

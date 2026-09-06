@@ -108,7 +108,7 @@ Configuration:
 Do not create a client secret. OIDC uses a short-lived token issued for each workflow run,
 so there is no long-lived GitHub-to-Azure password to store or rotate.
 
-### 5. Add the immutable GitHub federated credential — in progress
+### 5. Add the immutable GitHub federated credential — completed
 
 Azure Portal path: app registration **Certificates & secrets → Federated credentials →
 Add credential → GitHub Actions deploying Azure resources**.
@@ -152,7 +152,7 @@ the GitHub **owner ID**. New GitHub repositories use the immutable subject forma
 rename, transfer, or recycled repository name cannot silently expand the credential's
 trust boundary.
 
-### 6. Grant Contributor access — not started
+### 6. Grant Contributor access — completed
 
 Azure Portal path: **Subscriptions → select the learning subscription → Access control
 (IAM) → Add → Add role assignment**.
@@ -167,7 +167,7 @@ Azure roles to other identities. Subscription scope is used because later exerci
 create their own resource groups. This assignment costs $0 and remains in place during
 the learning plan.
 
-### 7. Add GitHub Actions configuration — not started
+### 7. Add GitHub Actions configuration — completed
 
 GitHub path: repository **Settings → Secrets and variables → Actions → New repository
 secret**.
@@ -182,6 +182,10 @@ Create:
 
 Do not record the values in this journal, commit them, or paste them into chat. No
 `AZURE_CLIENT_SECRET` is needed.
+
+The learner confirmed all three repository secrets were saved. The orb's GitHub token
+cannot list Actions secret metadata (`HTTP 403`), so this step is recorded from that
+confirmation; secret values were intentionally never requested or inspected.
 
 ### 8. Run and verify the local application — not started
 
@@ -239,9 +243,10 @@ Keep these intentional $0 resources because later days reuse them:
   `frontend-build`, with no administrator bypass
 - [x] Backend and frontend GHCR packages are public and anonymously pullable
 - [x] Entra application registration is created
-- [ ] Immutable federated credential is added
-- [ ] Contributor role is assigned
-- [ ] Three GitHub Actions secrets are added
+- [x] Immutable federated credential is added
+- [x] Contributor role is assigned
+- [x] `AZURE_CLIENT_ID`, `AZURE_TENANT_ID`, and `AZURE_SUBSCRIPTION_ID` are saved as
+  GitHub Actions repository secrets
 - [ ] Local five-container flow passes
 - [ ] Local Compose resources and volume are destroyed
 - [ ] Excel Day 1 row is marked `Done`, cost `$0`, and `Destroyed? = Yes`
