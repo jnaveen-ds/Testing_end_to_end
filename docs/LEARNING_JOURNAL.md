@@ -264,6 +264,154 @@ the task execution:
 docker compose logs --tail=100 worker
 ```
 
+### Docker command field guide from Day 1
+
+**Engine and project checks**
+
+```bash
+docker version                         # both Client and Server must appear
+docker context ls                      # show available Docker engines
+docker context use desktop-linux       # select Docker Desktop's Linux engine
+docker compose config --services       # list services without starting them
+docker compose config                  # render and validate the merged Compose model
+```
+
+If `dockerDesktopLinuxEngine` is missing, start Docker Desktop first. If necessary, run
+`wsl --update`, `wsl --shutdown`, restart Docker Desktop, and retry `docker version`.
+
+**Start, observe, and control the stack**
+
+```bash
+docker compose up --build -d            # build and start in the background
+docker compose up -d --no-build         # start using existing local image tags
+docker compose ps                       # service state, health, and published ports
+docker compose images                   # image used by each service
+docker compose logs --tail=100 api      # recent logs for one service
+docker compose logs -f worker           # stream worker logs; Ctrl+C stops following only
+docker compose restart api              # restart one service
+docker compose stop worker              # simulate a stopped worker
+docker compose start worker             # recover the stopped worker
+docker stats                            # live CPU and memory; Ctrl+C exits
+```
+
+**Inspect the API path and replace a stale frontend**
+
+```bash
+curl http://localhost:8000/health
+curl -I http://localhost:8080
+docker compose exec frontend cat /etc/nginx/conf.d/default.conf
+docker compose exec frontend nginx -t
+docker compose exec frontend wget -qO- http://api:8000/health
+
+docker pull ghcr.io/jnaveen-ds/feedback-analyzer-frontend:latest
+docker tag ghcr.io/jnaveen-ds/feedback-analyzer-frontend:latest testing_end_to_end-frontend:latest
+docker compose up -d --no-build --no-deps --force-recreate frontend
+```
+
+`docker pull` downloads a registry image; `docker tag` creates another local name without
+copying or downloading layers; `--force-recreate` replaces the container so it uses the
+new tag; `--no-deps` leaves API, worker, database, and Redis untouched.
+
+**Stop versus destroy**
+
+```bash
+docker compose stop                    # stop containers; keep them and their data
+docker compose start                   # restart those same containers
+docker compose down                    # remove containers and network; keep named volumes
+docker compose down -v                 # also delete named volumes/test database
+docker compose ps                      # verify no project services remain
+```
+
+Avoid `docker system prune -a` as routine cleanup: it affects every Docker project on the
+laptop, not only this application. The complete operational reference is in
+[RUNBOOK.md](RUNBOOK.md).
+
+### GitHub command field guide from Day 1
+
+**Inspect the repository and start protected-branch work**
+
+```bash
+gh auth status
+gh repo view jnaveen-ds/Testing_end_to_end
+git switch main
+git pull --ff-only origin main
+git switch -c <short-branch-name>
+git status
+```
+
+`main` is protected, so changes belong on a branch. `--ff-only` prevents an accidental
+local merge commit while updating `main`.
+
+**Review, commit, push, and open a PR**
+
+```bash
+git diff
+git add <files>
+git diff --cached
+git commit -m "concise description"
+git push -u origin <short-branch-name>
+gh pr create --base main --head <short-branch-name> --fill
+gh pr checks --watch
+gh pr view --web
+```
+
+Always inspect `git diff --cached` before committing. `git push` publishes the branch; it
+does not place changes on `main`. The PR is the review and required-check boundary.
+
+**Fix “This branch is out-of-date with the base branch”**
+
+```bash
+git fetch origin
+git merge origin/main
+git push
+gh pr checks --watch
+```
+
+This happened because **Require branches to be up to date** was enabled. The merge brings
+the latest protected `main` into the branch; CI reruns against the exact combined code.
+If a conflict occurs, use `git status`, resolve only the marked files, `git add` them,
+commit the merge, and push. Do not force-push or discard another person's changes.
+
+**Inspect CI and package publishing**
+
+```bash
+gh pr checks
+gh run list --limit 10
+gh run view <RUN_ID>
+gh run view <RUN_ID> --log-failed
+docker pull ghcr.io/jnaveen-ds/feedback-analyzer-backend:latest
+docker pull ghcr.io/jnaveen-ds/feedback-analyzer-frontend:latest
+```
+
+The two required PR checks are `backend-tests` and `frontend-build`. After a PR merges,
+the `Publish` workflow updates both GHCR images. A successful anonymous `docker pull`
+proves package visibility and registry access.
+
+**Get immutable GitHub IDs for Azure OIDC**
+
+```bash
+gh api users/jnaveen-ds --jq '{login, id}'
+gh api repos/jnaveen-ds/Testing_end_to_end \
+  --jq '{full_name, id, owner_id: .owner.id}'
+```
+
+These numeric IDs are public stable identifiers, not credentials. An `HTTP 403: Resource
+not accessible by integration` from `gh api` means the current token lacks permission for
+that API; it does not prove the requested GitHub setting or secret is absent.
+
+**After the PR is merged**
+
+```bash
+git switch main
+git pull --ff-only origin main
+git branch -d <short-branch-name>
+git push origin --delete <short-branch-name>  # optional; only after confirming merge
+```
+
+The first Day 1 PR was blocked by one required approving review. GitHub does not allow an
+author to approve their own PR, so this single-maintainer repository keeps PRs and CI
+required but requires zero approvals. Team repositories should require independent review.
+
 ### Day 1 destroy and retention checklist
 
 Delete the local containers, network, and test database volume:
