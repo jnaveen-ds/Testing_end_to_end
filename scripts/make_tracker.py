@@ -126,6 +126,12 @@ DAY_PROGRESS = {
         "GitHub governance, public GHCR, Entra OIDC/RBAC, and local five-container flow "
         "completed. Fixed missing nginx /api proxy. Containers and pgdata volume destroyed.",
     ),
+    2: (
+        "In progress",
+        "",
+        "Company-managed Windows laptop requires an IT administrator for Azure CLI installation. "
+        "Use ephemeral Azure Cloud Shell; no resource has been created yet.",
+    ),
 }
 
 # Per-day cost model. Rates are approximate pay-as-you-go list prices (USD,

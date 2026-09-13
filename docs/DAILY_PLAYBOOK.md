@@ -46,18 +46,65 @@ The exact values, portal paths, commands, evidence, and live completion checklis
 [LEARNING_JOURNAL.md § Day 1](LEARNING_JOURNAL.md#day-1--github-governance-azure-oidc-and-first-local-run).
 
 ## Day 2 — Tue Sep 1 · Azure CLI onboarding
-**Services:** CLI only. Nothing deployed.
-**Portal:** Sign in at portal.azure.com; note your Subscription ID (Subscriptions blade).
-**CLI:**
+**Services:** Azure Cloud Shell, Azure Resource Manager, Resource Groups, and Resource
+Providers. **Cost:** $0. An empty resource group has no usage meter.
+
+**Why this comes first:** a resource group is the lifecycle and management boundary for
+the resources in one workload or experiment. Later, one command can list that
+experiment, assign access at its boundary, inspect its deployments and cost, or delete
+the entire experiment. It is not a server, network, or folder hierarchy, and its region
+stores the group's metadata rather than forcing every child resource into that region.
+
+**AWS comparison:** Azure has no exact one-to-one equivalent. An Azure resource group
+combines part of the purpose of an AWS CloudFormation stack (manage a deployment as a
+unit) with AWS Resource Groups/tags (find related resources) and an IAM policy scope.
+An AWS VPC is **not** the equivalent; Azure's VNet is the VPC equivalent. Azure makes the
+resource-group boundary mandatory, while AWS commonly organizes resources through
+accounts, tags, and CloudFormation stacks.
+
+**Laptop constraint:** the managed company laptop rejected the Azure CLI installer
+because the learner does not have an IT-approved administrator account. Do not bypass
+company controls. Use portal Cloud Shell: top toolbar **Cloud Shell (`>_`) → Bash → No
+storage account required → select the learning subscription → Apply**. This ephemeral
+session has Azure CLI preinstalled, is already authenticated, creates no storage account,
+and discards shell files when it closes. If required, register `Microsoft.CloudShell`
+under **Subscriptions → Resource providers** first; registration costs $0.
+
+**Portal — manual first:** **Resource groups → Create** → learning subscription → name
+`learn-cli-0913` → **South India** → tags `purpose=learning`, `day=2`, and
+`expires=2026-09-16` → **Review + create → Create**. Open it and confirm it contains no
+resources.
+
+**CLI — inspect the portal-created object:**
 ```bash
-az login                                    # opens browser
-az account list -o table                    # confirm the right subscription
-az account set --subscription <SUB_ID>
-az group list -o table                      # see what exists (likely nothing new)
-az provider register --namespace Microsoft.ContainerRegistry   # pre-warm providers
+az version
+az account list --query "[].{Subscription:name,State:state,Default:isDefault}" -o table
+az account set --subscription "<SUBSCRIPTION NAME>"
+az account show --query "{Subscription:name,State:state,Default:isDefault}" -o table
+az group show -n learn-cli-0913 \
+  --query "{Name:name,Location:location,ProvisioningState:properties.provisioningState,Tags:tags}" -o json
+az resource list -g learn-cli-0913 -o table
+az provider show --namespace Microsoft.ContainerRegistry --query registrationState -o tsv
+az provider register --namespace Microsoft.ContainerRegistry --wait  # only when not Registered
 ```
-**Learn:** everything in Azure hangs off a **resource group**; note your subscription id
-privately. **Destroy:** nothing created.
+
+**Why these selections:** South India keeps future learning resources near the learner;
+the expiry tag makes ownership and intended lifetime visible; an empty group isolates the
+management exercise without creating billable services. Registering
+`Microsoft.ContainerRegistry` enables later ACR resource types at the subscription level;
+it creates no registry and costs $0.
+
+**Destroy and prove it:**
+
+```bash
+az group delete -n learn-cli-0913 --yes --no-wait
+az group wait --deleted -n learn-cli-0913
+az group exists -n learn-cli-0913  # must print false
+```
+
+Keep the $0 resource-provider registrations and Day 1 OIDC configuration. A resource
+provider is a subscription capability, not an experiment resource inside the deleted
+group.
 
 ## Day 3 — Tue Sep 2 · Key Vault, manually in the portal
 **Services:** Key Vault.

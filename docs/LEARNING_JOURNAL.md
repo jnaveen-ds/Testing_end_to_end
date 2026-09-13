@@ -21,6 +21,100 @@ A day is complete only after its verification and destroy checklist passes.
 | Day | Topic | Status | Planned cost | Actual cost | Cleanup |
 |---|---|---|---:|---:|---|
 | 1 | GitHub governance, GHCR, Azure OIDC, local Compose | **Done** | $0 | **$0** | Containers and volume destroyed |
+| 2 | Azure hierarchy, Cloud Shell, Resource Groups, AWS comparison | **In progress** | $0 | **$0 so far** | No Azure resource created yet |
+
+## Day 2 — Understand Azure's management boundary before deploying
+
+**Date:** 2026-09-13
+**Services:** Azure Cloud Shell, Azure Resource Manager, Resource Groups, and Resource
+Providers
+**Goal:** Understand why Azure requires a resource group, compare that boundary with AWS,
+create one tagged empty group manually, inspect it through CLI, and destroy it.
+**Planned cost:** $0. An empty resource group and resource-provider registrations have no
+usage meters. Outside the $200 Azure credit: $0.
+
+### The problem a resource group solves
+
+A deployment usually creates several connected resources: an application, network,
+database, secrets, monitoring, and identities. Without a shared boundary, answering
+“which resources belong to this experiment?”, granting access, checking its cost, and
+cleaning it up all depend on remembering names or querying tags.
+
+Azure requires every resource to belong to exactly one resource group. We will use one
+group per learning experiment because it provides:
+
+- **Lifecycle:** create and delete an experiment as a unit. Deleting the group deletes
+  the resources inside it, subject to locks and service-specific deletion behavior.
+- **Access scope:** apply Azure RBAC once at the group instead of separately on every
+  child resource.
+- **Governance:** apply Azure Policy and resource locks at the group boundary.
+- **Operations:** see deployments, activity logs, and related resources together.
+- **Cost allocation:** filter Cost Management by resource group and tags.
+
+A resource group is not a server, network, or billing invoice. Resource groups cannot be
+nested. Its selected region stores the group's control-plane metadata; resources inside
+may use other supported regions, although colocating a workload is usually simpler.
+
+### Azure and AWS comparison
+
+There is no exact AWS equivalent to an Azure resource group:
+
+| Azure concept | Closest AWS concept | Important difference |
+|---|---|---|
+| Microsoft Entra tenant | AWS Organizations identity/governance layer | Different identity models; not a direct mapping |
+| Azure subscription | AWS account | Both provide strong billing, quota, and access boundaries |
+| Resource group | CloudFormation stack + AWS Resource Groups/tags + IAM scoping | Azure requires every resource to have one resource group; AWS does not require one universal container |
+| ARM/Bicep or Terraform deployment | CloudFormation or Terraform stack | Declares and tracks infrastructure resources |
+| VNet | VPC | These are the actual virtual-network equivalents; a VPC is not a resource group |
+| Azure RBAC at resource-group scope | IAM policy constrained to resource ARNs/tags | Azure's hierarchy provides a native inherited scope |
+
+We selected an empty resource group for Day 2 because it teaches this boundary without
+creating a billable service. Tomorrow, the same boundary will contain a Key Vault.
+
+### Managed-laptop installation problem and safe decision
+
+`winget install --exact --id Microsoft.AzureCLI` opened Windows UAC on the company
+laptop. The learner's normal company credentials were rejected because software
+installation requires an IT-approved administrator account. This is an endpoint-policy
+restriction, not an Azure password failure. Do not keep retrying credentials, disable
+controls, or use an unapproved portable installation.
+
+The supported alternative is an ephemeral Azure Cloud Shell session, which provides an
+authenticated, preinstalled Azure CLI in the browser without changing the laptop:
+
+1. Azure Portal top toolbar **Cloud Shell (`>_`)**.
+2. Choose **Bash**.
+3. Select **No storage account required**.
+4. Select the learning subscription and **Apply**.
+5. If required, register `Microsoft.CloudShell` under **Subscriptions → Resource
+   providers**; registration costs $0.
+
+Ephemeral Cloud Shell does not create a storage account. Files disappear when the shell
+closes, which is appropriate for today's inspection commands. `az login` is unnecessary
+because Cloud Shell authenticates the signed-in portal user automatically.
+
+### Why these Day 2 selections
+
+- **South India:** intended home region for this learning project; future latency and
+  availability choices can be discussed from a consistent baseline.
+- **Name `learn-cli-0913`:** identifies purpose and session while remaining disposable.
+- **Tags:** `purpose=learning`, `day=2`, `expires=2026-09-16` communicate ownership and
+  lifecycle to humans, scripts, policy, and cost reports.
+- **`Microsoft.ContainerRegistry`:** registering this resource provider enables later ACR
+  deployments. Registration does not create a registry and costs $0.
+- **Destroy today:** proves that cleanup is a designed deployment step rather than a
+  promise to remember later.
+
+### Day 2 status
+
+- [x] Local Azure CLI installation blocker understood; no company controls bypassed
+- [x] Ephemeral Cloud Shell selected as the supported alternative
+- [ ] Cloud Shell opens and subscription context is verified
+- [ ] Tagged resource group is created manually in the portal
+- [ ] CLI can inspect the group and shows no child resources
+- [ ] `Microsoft.ContainerRegistry` provider is verified as registered
+- [ ] Resource group is deleted and `az group exists` returns `false`
+- [ ] Excel Day 2 row is marked `Done`, cost `$0`, and `Destroyed? = Yes`
 
 ## Day 1 — GitHub governance, Azure OIDC, and first local run
 

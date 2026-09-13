@@ -146,7 +146,7 @@
     .stat small { color: var(--muted); }
 
     .progress-track { height: 10px; margin-top: .8rem; overflow: hidden; border-radius: 99px; background: #dfe7f1; }
-    .progress-fill { width: 100%; height: 100%; border-radius: inherit; background: linear-gradient(90deg, var(--azure), var(--cyan)); }
+    .progress-fill { width: 3.57%; height: 100%; border-radius: inherit; background: linear-gradient(90deg, var(--azure), var(--cyan)); }
 
     .flow { display: grid; grid-template-columns: repeat(4, 1fr); gap: .8rem; }
     .flow-card { position: relative; min-width: 0; padding: 1rem; border-radius: 14px; background: var(--white); border: 1px solid var(--line); }
@@ -239,7 +239,7 @@
       <h1>Azure DevOps<br>Learning Journey</h1>
       <p class="hero-copy">One small application. Many deployment paths. Every service learned manually first, automated second, and destroyed safely.</p>
       <div class="hero-meta">
-        <span class="pill">Day 1 · Complete</span>
+        <span class="pill">Day 2 · In progress</span>
         <span class="pill">Budget · $200 Azure credit</span>
         <span class="pill">Today · $0</span>
         <span class="pill">Deadline · Sep 27, 2026</span>
@@ -250,6 +250,7 @@
   <div class="jumpbar">
     <nav aria-label="Page sections">
       <a href="#overview">Overview</a>
+      <a href="#day2">Day 2 · Azure foundations</a>
       <a href="#flow">Learning flow</a>
       <a href="#github">GitHub</a>
       <a href="#oidc">Azure OIDC</a>
@@ -262,20 +263,65 @@
   <main>
     <section id="overview" aria-labelledby="overview-title">
       <div class="stats">
-        <article class="stat"><span class="stat-label">Day</span><strong>1 of 28</strong><small>Foundations</small></article>
-        <article class="stat"><span class="stat-label">Completed</span><strong>9 of 9</strong><div class="progress-track" aria-label="Day 1 is 100 percent complete"><div class="progress-fill"></div></div></article>
+        <article class="stat"><span class="stat-label">Current day</span><strong>2 of 28</strong><small>Azure foundations</small></article>
+        <article class="stat"><span class="stat-label">Days complete</span><strong>1 of 28</strong><div class="progress-track" aria-label="1 of 28 learning days complete"><div class="progress-fill"></div></div></article>
         <article class="stat"><span class="stat-label">Azure cost today</span><strong>$0.00</strong><small>Outside $200 credit: $0</small></article>
-        <article class="stat"><span class="stat-label">Next</span><strong>Day 2</strong><small>Azure CLI foundations</small></article>
+        <article class="stat"><span class="stat-label">Current focus</span><strong>Why first</strong><small>Understand before creating</small></article>
       </div>
       <div class="section-head" style="margin-top: 2.2rem">
-        <p class="eyebrow" style="color: var(--azure)">Day 1 objective</p>
-        <h2 id="overview-title">Create a secure path from code to cloud</h2>
-        <p>Protect changes, publish deployable images, establish secretless Azure authentication, and prove the application works locally.</p>
+        <p class="eyebrow" style="color: var(--azure)">Day 2 objective</p>
+        <h2 id="overview-title">Understand Azure's boundary before deploying</h2>
+        <p>Learn what a resource group solves, where it sits in Azure, how it differs from AWS, and why today's disposable exercise costs $0.</p>
       </div>
     </section>
 
+    <section id="day2" aria-labelledby="day2-title">
+      <div class="section-head"><p class="eyebrow" style="color: var(--amber)">In progress · $0</p><h2 id="day2-title">Why Azure requires a resource group</h2><p>A resource group is a mandatory lifecycle and management boundary—not a server, network, or decorative folder.</p></div>
+      <div class="two-col">
+        <article class="panel">
+          <h3>The problem it solves</h3>
+          <p>A workload can include an app, network, database, secrets, monitoring, and identities. Putting one experiment in one resource group lets us:</p>
+          <ul><li>delete its resources as one lifecycle unit</li><li>inherit RBAC, Policy, and locks from one scope</li><li>review deployments and activity together</li><li>filter cost by resource group and tags</li></ul>
+          <div class="callout">Every Azure resource belongs to exactly one resource group. Groups cannot be nested. The group's region stores control-plane metadata; child resources may use other supported regions.</div>
+        </article>
+        <article class="panel">
+          <h3>Why today's empty group</h3>
+          <ul><li><strong>Empty:</strong> learn the boundary without a billable service.</li><li><strong>South India:</strong> consistent baseline for later regional choices.</li><li><strong><code>learn-cli-0913</code>:</strong> disposable purpose and session are visible.</li><li><strong>Expiry tag:</strong> humans and automation can identify stale experiments.</li><li><strong>Destroy today:</strong> cleanup is proven, not promised.</li></ul>
+          <p><span class="badge done">Planned cost · $0</span></p>
+        </article>
+      </div>
+
+      <div class="section-head" style="margin-top: 2rem"><h2>Azure compared with AWS</h2><p>There is no exact one-to-one AWS equivalent for an Azure resource group.</p></div>
+      <article class="panel">
+        <table>
+          <thead><tr><th>Azure</th><th>Closest AWS concept</th><th>Important distinction</th></tr></thead>
+          <tbody>
+            <tr><td>Entra tenant</td><td>AWS Organizations identity/governance layer</td><td>Different identity models; not a direct mapping.</td></tr>
+            <tr><td>Subscription</td><td>AWS account</td><td>Strong billing, quota, and access boundaries.</td></tr>
+            <tr><td>Resource group</td><td>CloudFormation stack + Resource Groups/tags + IAM scope</td><td>Azure requires this container; AWS has no universal mandatory equivalent.</td></tr>
+            <tr><td>ARM/Bicep or Terraform deployment</td><td>CloudFormation or Terraform stack</td><td>Declares and tracks infrastructure resources.</td></tr>
+            <tr><td>VNet</td><td>VPC</td><td>These are the network equivalents. A VPC is not a resource group.</td></tr>
+            <tr><td>Resource-group RBAC</td><td>IAM policy constrained to ARNs/tags</td><td>Azure permissions inherit through its native hierarchy.</td></tr>
+          </tbody>
+        </table>
+      </article>
+
+      <div class="callout warning"><strong>Managed-laptop lesson:</strong> Windows UAC rejected the Azure CLI installation because it requires an IT-approved administrator account. This is endpoint policy, not an Azure password error. Do not bypass it.</div>
+      <details open>
+        <summary>Supported alternative — ephemeral Azure Cloud Shell</summary>
+        <div>
+          <ol><li>Azure Portal top toolbar → <strong>Cloud Shell (`&gt;_`)</strong></li><li>Choose <strong>Bash</strong></li><li>Select <strong>No storage account required</strong></li><li>Select the learning subscription → <strong>Apply</strong></li></ol>
+          <p>Cloud Shell supplies an authenticated, preinstalled Azure CLI. No storage account is created, shell files disappear after closing, and today's cost remains $0. If prompted, register <code>Microsoft.CloudShell</code> under <strong>Subscriptions → Resource providers</strong>.</p>
+        </div>
+      </details>
+      <article class="panel">
+        <h3>Day 2 completion</h3>
+        <ul class="checklist"><li class="checked">Installation blocker understood; company controls not bypassed</li><li class="checked">Ephemeral Cloud Shell selected</li><li class="unchecked">Subscription context verified</li><li class="unchecked">Tagged empty resource group created manually</li><li class="unchecked">Group inspected through CLI</li><li class="unchecked"><code>Microsoft.ContainerRegistry</code> registered</li><li class="unchecked">Group deleted and existence check returns <code>false</code></li></ul>
+      </article>
+    </section>
+
     <section id="flow" aria-labelledby="flow-title">
-      <div class="section-head"><h2 id="flow-title">The learning flow</h2><p>The same repeatable pattern will guide every deployment.</p></div>
+      <div class="section-head"><p class="eyebrow" style="color: var(--green)">Day 1 complete</p><h2 id="flow-title">The learning flow</h2><p>The same repeatable pattern will guide every deployment.</p></div>
       <div class="flow">
         <article class="flow-card"><span class="badge done">Done</span><strong>1 · Govern</strong><p>Public repo, protected main, required CI.</p></article>
         <article class="flow-card"><span class="badge done">Done</span><strong>2 · Package</strong><p>Public backend and frontend images.</p></article>
