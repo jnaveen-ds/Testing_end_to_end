@@ -382,6 +382,7 @@ docker tag ghcr.io/jnaveen-ds/feedback-analyzer-frontend:latest testing_end_to_e
 docker compose up -d --no-build
 docker compose ps</code></pre><p>This runs the same published artifacts intended for deployment. The durable build fix is to obtain the intercepting organization's CA certificate and trust it inside the build container—not to weaken HTTPS.</p></div>
       </details>
+      <div class="callout"><strong>Stack running:</strong> after Docker Desktop restarted with the <code>desktop-linux</code> context, both GHCR images pulled successfully and Compose completed <code>7/7</code>. All five services are up; PostgreSQL and Redis are healthy. Functional submission and final cleanup remain.</div>
       <div class="callout"><strong>Expected:</strong> <code>db</code>, <code>redis</code>, <code>api</code>, <code>worker</code>, and <code>frontend</code> are running. Submit feedback in the SPA and confirm <code>pending → completed</code>.</div>
     </section>
 

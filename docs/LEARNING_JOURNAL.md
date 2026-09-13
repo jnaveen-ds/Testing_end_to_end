@@ -230,6 +230,13 @@ fix requires installing the intercepting organization's CA certificate into the 
 container; obtain that certificate from the device/network administrator rather than
 committing a machine-specific certificate or weakening HTTPS.
 
+**Recovery result:** Docker Desktop was restarted with the `desktop-linux` context;
+`docker version` then reported both the Windows client and Linux server. Both public GHCR
+images pulled successfully, the local Compose tags were created, and
+`docker compose up -d --no-build` completed `7/7`. `docker compose ps` showed all five
+services running, with PostgreSQL and Redis healthy. Functional submission and final
+cleanup remain before Day 1 is complete.
+
 Expected running services: `db`, `redis`, `api`, `worker`, and `frontend`.
 
 Verify the API and SPA:
