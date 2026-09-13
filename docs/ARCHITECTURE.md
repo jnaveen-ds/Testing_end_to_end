@@ -74,7 +74,8 @@ single most transferable pattern in backend engineering.
 
 **Submit** — `frontend/src/App.tsx#submit` → `POST /api/analyses`
 1. React calls `createAnalysis(text)` (`frontend/src/api.ts`) — plain JSON over HTTP.
-2. nginx (`frontend/Dockerfile` → nginx config) proxies `/api/*` to the `api` container.
+2. nginx (`frontend/Dockerfile` → `frontend/nginx.conf`) strips the `/api` prefix and
+   proxies the request to the `api` container on port 8000.
 3. FastAPI validates the body against `AnalysisCreate` (`app/schemas.py`). Bad input never reaches your code — this is why `test_rejects_blank_text` expects 422.
 4. `create_analysis` (`app/main.py`) inserts `AnalysisJob(status=pending)` (`app/models.py`) and calls `run_analysis_task.delay(id)` — that **serializes the job id onto Redis** and returns instantly. Response: `201 {id, status: "pending"}`.
 
@@ -115,6 +116,7 @@ backend/tests/
 frontend/
 ├── package.json / vite.config.ts / tsconfig.json
 ├── Dockerfile                # multi-stage: node build → nginx serve
+├── nginx.conf                # same-origin /api proxy + SPA route fallback
 └── src/
     ├── main.tsx / styles.css # app bootstrap + styling
     ├── api.ts                # typed API client — the ONLY file that knows HTTP details

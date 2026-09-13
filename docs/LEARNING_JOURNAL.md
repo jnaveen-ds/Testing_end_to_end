@@ -237,6 +237,15 @@ images pulled successfully, the local Compose tags were created, and
 services running, with PostgreSQL and Redis healthy. Functional submission and final
 cleanup remain before Day 1 is complete.
 
+**Functional test failure:** the SPA loaded at port 8080 and the API health endpoint
+returned `{"status":"ok","provider":"fake"}`, but Analyze returned `404 Not Found`.
+Inspection confirmed a repository defect: `frontend/src/api.ts` correctly requested
+`/api/analyses`, while the nginx production image used its default static-only config and
+had no `/api` proxy. The fix adds `frontend/nginx.conf` to strip `/api`, proxy to
+`api:8000`, and fall back to `index.html` for SPA routes; `frontend/Dockerfile` now copies
+that config into the image. A new frontend image must be published and pulled before the
+submission test is repeated.
+
 Expected running services: `db`, `redis`, `api`, `worker`, and `frontend`.
 
 Verify the API and SPA:

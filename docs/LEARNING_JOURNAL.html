@@ -383,6 +383,7 @@ docker compose up -d --no-build
 docker compose ps</code></pre><p>This runs the same published artifacts intended for deployment. The durable build fix is to obtain the intercepting organization's CA certificate and trust it inside the build container—not to weaken HTTPS.</p></div>
       </details>
       <div class="callout"><strong>Stack running:</strong> after Docker Desktop restarted with the <code>desktop-linux</code> context, both GHCR images pulled successfully and Compose completed <code>7/7</code>. All five services are up; PostgreSQL and Redis are healthy. Functional submission and final cleanup remain.</div>
+      <div class="callout warning"><strong>Functional test found a repository bug:</strong> the SPA loaded and <code>/health</code> returned <code>{"status":"ok","provider":"fake"}</code>, but Analyze returned 404. The SPA correctly called <code>/api/analyses</code>; the nginx image had only its default static configuration. The fix adds <code>frontend/nginx.conf</code>, which strips <code>/api</code>, proxies to <code>api:8000</code>, and preserves SPA route fallback. Publish and pull the corrected frontend image before retesting.</div>
       <div class="callout"><strong>Expected:</strong> <code>db</code>, <code>redis</code>, <code>api</code>, <code>worker</code>, and <code>frontend</code> are running. Submit feedback in the SPA and confirm <code>pending → completed</code>.</div>
     </section>
 
