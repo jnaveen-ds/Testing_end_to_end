@@ -222,6 +222,105 @@ docker run -d --network appnet -p 8080:80 ghcr.io/${OWNER}/feedback-analyzer-fro
 (Images are public; for private ones, `docker login ghcr.io` first.) This is the
 deployment primitive the later stages automate: pin `TAG` to a sha for rollbacks.
 
+## Docker command field guide
+
+```bash
+# Engine and Compose model
+docker version                              # require Client + Server
+docker context ls
+docker context use desktop-linux            # Docker Desktop on Windows
+docker compose config --services
+docker compose config
+
+# Lifecycle and observation
+docker compose up --build -d
+docker compose up -d --no-build
+docker compose ps
+docker compose images
+docker compose logs --tail=100 api
+docker compose logs -f worker
+docker compose restart api
+docker compose stop worker && docker compose start worker
+docker stats
+
+# Inspect frontend → API connectivity
+docker compose exec frontend nginx -t
+docker compose exec frontend cat /etc/nginx/conf.d/default.conf
+docker compose exec frontend wget -qO- http://api:8000/health
+
+# Project-scoped cleanup
+docker compose stop                     # reversible; containers remain
+docker compose down                     # remove containers/network, retain volumes
+docker compose down -v                  # also remove named volumes/test data
+docker compose ps                       # empty after destruction
+```
+
+`docker pull` downloads layers once. `docker tag SOURCE TARGET` adds another local name
+for the same image without copying it. To replace only a stale frontend after retagging:
+
+```bash
+docker compose up -d --no-build --no-deps --force-recreate frontend
+```
+
+Avoid routine `docker system prune -a`; unlike `docker compose down`, it affects every
+project on the machine.
+
+## GitHub command field guide
+
+```bash
+# Begin work without touching protected main
+gh auth status
+gh repo view jnaveen-ds/Testing_end_to_end
+git switch main
+git pull --ff-only origin main
+git switch -c <short-branch-name>
+
+# Review and publish the change
+git diff
+git add <files>
+git diff --cached
+git commit -m "concise description"
+git push -u origin <short-branch-name>
+gh pr create --base main --head <short-branch-name> --fill
+gh pr checks --watch
+
+# Bring an out-of-date PR up to date; required checks rerun
+git fetch origin
+git merge origin/main
+git push
+gh pr checks --watch
+
+# Diagnose Actions
+gh run list --limit 10
+gh run view <RUN_ID>
+gh run view <RUN_ID> --log-failed
+
+# Update locally and remove a merged branch
+git switch main
+git pull --ff-only origin main
+git branch -d <short-branch-name>
+git push origin --delete <short-branch-name>  # optional; merged branches only
+```
+
+Required checks are `backend-tests` and `frontend-build`. A branch push does not update
+`main`; only merging its PR does. If Git reports conflicts while merging `origin/main`,
+inspect `git status`, resolve only marked files, add and commit them, then push. Never
+force-push merely to satisfy the up-to-date rule.
+
+For Azure's immutable OIDC subject, retrieve the public stable IDs with:
+
+```bash
+gh api users/jnaveen-ds --jq '{login, id}'
+gh api repos/jnaveen-ds/Testing_end_to_end \
+  --jq '{full_name, id, owner_id: .owner.id}'
+```
+
+`HTTP 403: Resource not accessible by integration` means the current token lacks access
+to that GitHub API; it is not evidence that a branch rule, package, or secret is absent.
+The repository has one maintainer, so it requires PRs and green CI but zero approving
+reviews—an author cannot approve their own PR. Team repositories should require an
+independent review.
+
 ## Troubleshooting
 
 | # | Symptom | Likely cause | Check / fix |
@@ -234,6 +333,9 @@ deployment primitive the later stages automate: pin `TAG` to a sha for rollbacks
 | 6 | `failed` jobs with provider errors | Azure config / quota / key | `SELECT error FROM analysis_jobs WHERE status='failed'`; switch to `LLM_PROVIDER=fake` to isolate |
 | 7 | API can't reach `db` / `redis` | Started before healthchecks passed or wrong hostnames | compose `depends_on` conditions; hostnames are service names (`db`, `redis`), never `localhost` |
 | 8 | Works locally, fails on server | Stale image or missing env | `docker compose build --no-cache api worker`; diff env vars between environments |
+| 9 | `dockerDesktopLinuxEngine` pipe missing | Docker CLI exists but Docker Desktop's Linux engine is stopped | Start Docker Desktop; require Client + Server in `docker version`; check `desktop-linux` context and WSL |
+| 10 | Build-time pip `CERTIFICATE_VERIFY_FAILED` | Managed-network CA is trusted by Windows but not the Linux image | Use the CI-built image for the exercise; obtain the approved CA from IT for a durable image fix; never disable TLS |
+| 11 | SPA loads, Analyze returns 404, API health is OK | Stale frontend or missing nginx `/api` proxy | Pull/retag/recreate frontend; inspect `/etc/nginx/conf.d/default.conf`; run `nginx -t` |
 
 ---
 
