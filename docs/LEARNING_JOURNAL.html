@@ -146,7 +146,7 @@
     .stat small { color: var(--muted); }
 
     .progress-track { height: 10px; margin-top: .8rem; overflow: hidden; border-radius: 99px; background: #dfe7f1; }
-    .progress-fill { width: 88.89%; height: 100%; border-radius: inherit; background: linear-gradient(90deg, var(--azure), var(--cyan)); }
+    .progress-fill { width: 100%; height: 100%; border-radius: inherit; background: linear-gradient(90deg, var(--azure), var(--cyan)); }
 
     .flow { display: grid; grid-template-columns: repeat(4, 1fr); gap: .8rem; }
     .flow-card { position: relative; min-width: 0; padding: 1rem; border-radius: 14px; background: var(--white); border: 1px solid var(--line); }
@@ -239,7 +239,7 @@
       <h1>Azure DevOps<br>Learning Journey</h1>
       <p class="hero-copy">One small application. Many deployment paths. Every service learned manually first, automated second, and destroyed safely.</p>
       <div class="hero-meta">
-        <span class="pill">Day 1 · In progress</span>
+        <span class="pill">Day 1 · Complete</span>
         <span class="pill">Budget · $200 Azure credit</span>
         <span class="pill">Today · $0</span>
         <span class="pill">Deadline · Sep 27, 2026</span>
@@ -263,9 +263,9 @@
     <section id="overview" aria-labelledby="overview-title">
       <div class="stats">
         <article class="stat"><span class="stat-label">Day</span><strong>1 of 28</strong><small>Foundations</small></article>
-        <article class="stat"><span class="stat-label">Completed</span><strong>8 of 9</strong><div class="progress-track" aria-label="Day 1 is 89 percent complete"><div class="progress-fill"></div></div></article>
+        <article class="stat"><span class="stat-label">Completed</span><strong>9 of 9</strong><div class="progress-track" aria-label="Day 1 is 100 percent complete"><div class="progress-fill"></div></div></article>
         <article class="stat"><span class="stat-label">Azure cost today</span><strong>$0.00</strong><small>Outside $200 credit: $0</small></article>
-        <article class="stat"><span class="stat-label">Current task</span><strong>Cleanup</strong><small>Destroy local stack</small></article>
+        <article class="stat"><span class="stat-label">Next</span><strong>Day 2</strong><small>Azure CLI foundations</small></article>
       </div>
       <div class="section-head" style="margin-top: 2.2rem">
         <p class="eyebrow" style="color: var(--azure)">Day 1 objective</p>
@@ -280,7 +280,7 @@
         <article class="flow-card"><span class="badge done">Done</span><strong>1 · Govern</strong><p>Public repo, protected main, required CI.</p></article>
         <article class="flow-card"><span class="badge done">Done</span><strong>2 · Package</strong><p>Public backend and frontend images.</p></article>
         <article class="flow-card"><span class="badge done">Done</span><strong>3 · Authenticate</strong><p>GitHub OIDC to Microsoft Entra.</p></article>
-        <article class="flow-card"><span class="badge active">Now</span><strong>4 · Verify & destroy</strong><p>Run five containers, test, remove.</p></article>
+        <article class="flow-card"><span class="badge done">Done</span><strong>4 · Verify & destroy</strong><p>Five containers tested and removed.</p></article>
       </div>
     </section>
 
@@ -358,7 +358,7 @@ gh api repos/jnaveen-ds/Testing_end_to_end \
     </section>
 
     <section id="local" aria-labelledby="local-title">
-      <div class="section-head"><p class="eyebrow" style="color: var(--green)">Flow verified · cleanup pending</p><h2 id="local-title">Run the five-container application</h2><p>Verify every hop locally before deploying the same topology to Azure.</p></div>
+      <div class="section-head"><p class="eyebrow" style="color: var(--green)">Completed and destroyed</p><h2 id="local-title">Run the five-container application</h2><p>Every hop was verified locally before deploying the same topology to Azure.</p></div>
       <div class="callout warning"><strong>First attempt:</strong> the API/worker build stopped during <code>pip install</code> with <code>CERTIFICATE_VERIFY_FAILED: self-signed certificate in certificate chain</code>. Host Python succeeds because <code>pip-system-certs</code> uses the Windows certificate store, but the isolated Linux build inherits neither that package nor the Windows trust store. The application itself had not started. Do not disable TLS or use pip <code>--trusted-host</code>.</div>
       <div class="two-col">
         <article class="panel"><h3>Start</h3><pre><code>git clone https://github.com/jnaveen-ds/Testing_end_to_end
@@ -478,12 +478,13 @@ git push origin --delete &lt;short-branch-name&gt;</code></pre><p>Delete the rem
     </section>
 
     <section id="cleanup" aria-labelledby="cleanup-title">
-      <div class="section-head"><h2 id="cleanup-title">Destroy always</h2><p>Cleanup is part of deployment—not an optional final task.</p></div>
+      <div class="section-head"><p class="eyebrow" style="color: var(--green)">Verified complete</p><h2 id="cleanup-title">Destroy always</h2><p>Cleanup is part of deployment—not an optional final task.</p></div>
       <div class="two-col">
         <article class="panel"><h3>Destroy local resources</h3><pre><code>docker compose down -v
 docker compose ps</code></pre><p>The second command must show no running project services. <code>-v</code> removes the test database volume.</p></article>
         <article class="panel"><h3>Keep intentionally · $0</h3><ul><li>Entra app registration</li><li>Federated credential</li><li>Contributor assignment</li><li>GitHub Actions configuration</li><li>Public GHCR images</li></ul></article>
       </div>
+      <div class="callout"><strong>Cleanup evidence:</strong> <code>docker compose ps -a</code> and <code>docker volume ls --filter name=testing_end_to_end</code> returned headings with no rows. Containers, network, and PostgreSQL test data are gone; reusable image layers remain at $0 cloud cost.</div>
     </section>
 
     <section id="checklist" aria-labelledby="checklist-title">
@@ -498,7 +499,7 @@ docker compose ps</code></pre><p>The second command must show no running project
           <li class="checked">Contributor role assigned</li>
           <li class="checked"><code>AZURE_CLIENT_ID</code>, <code>AZURE_TENANT_ID</code>, and <code>AZURE_SUBSCRIPTION_ID</code> saved as repository secrets</li>
           <li class="checked">Local feedback flow verified; submitted job reached <code>completed</code></li>
-          <li class="unchecked">Local Compose stack and volume destroyed</li>
+          <li class="checked">Local Compose stack and PostgreSQL volume destroyed and verified absent</li>
         </ul>
       </article>
     </section>

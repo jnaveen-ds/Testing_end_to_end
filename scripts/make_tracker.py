@@ -119,6 +119,15 @@ DAYS = [
      "-", "Screenshot everything first", "final az group delete", "1h"),
 ]
 
+DAY_PROGRESS = {
+    1: (
+        "Done",
+        "Yes",
+        "GitHub governance, public GHCR, Entra OIDC/RBAC, and local five-container flow "
+        "completed. Fixed missing nginx /api proxy. Containers and pgdata volume destroyed.",
+    ),
+}
+
 # Per-day cost model. Rates are approximate pay-as-you-go list prices (USD,
 # ~East US; South India similar for these SKUs). Azure free-account allowances
 # (12-month free services) make several of these $0 in practice — shown so you
@@ -155,7 +164,7 @@ DAY_COSTS = [
 ]
 
 DEPLOYMENTS = [
-    (1, "Local compose stack (5 containers)", "Docker Compose", "Day 1", "keep (local)"),
+    (1, "Local compose stack (5 containers)", "Docker Compose", "Day 1", "destroyed after verification"),
     (2, "Key Vault-backed app configuration", "Key Vault + RBAC", "Day 7", "vault may stay (~$0)"),
     (3, "Full stack on a VM + TLS + CI deploy-on-push", "VM, VNet, NSG, nginx, TLS", "Days 9-12", "destroy Day 14"),
     (4, "Container Apps: API + scale-to-zero worker", "Container Apps, KEDA, Log Analytics", "Day 17", "destroy Day 21"),
@@ -213,8 +222,9 @@ def main():
     cost_by_day = {dc[0]: dc[4] for dc in DAY_COSTS}
     for r, (day, date, phase, goal, services, portal, cli, t) in enumerate(DAYS, 2):
         d = dt.date.fromisoformat(date)
+        status, destroyed, notes = DAY_PROGRESS.get(day, ("Not started", "", ""))
         vals = [day, date, d.strftime("%a"), phase, goal, services, portal, cli, t,
-                "Not started", cost_by_day.get(day, ""), "", ""]
+                status, cost_by_day.get(day, ""), destroyed, notes]
         for c, v in enumerate(vals, 1):
             cell = ws.cell(row=r, column=c, value=v)
             cell.font = Font(size=10)
@@ -224,7 +234,7 @@ def main():
     dv.add(f"J2:J{len(DAYS) + 1}")
     dv2 = DataValidation(type="list", formula1='"Yes,No,-"', allow_blank=True)
     ws.add_data_validation(dv2)
-    dv2.add(f"M2:M{len(DAYS) + 1}")
+    dv2.add(f"L2:L{len(DAYS) + 1}")
     set_widths(ws, [5, 11, 6, 12, 34, 24, 38, 38, 6, 12, 9, 11, 22])
     ws.freeze_panes = "E2"
 
@@ -266,7 +276,9 @@ def main():
     ws = wb.create_sheet("Deployments")
     header(ws, ["#", "Deployment", "Azure services", "Day", "End-state plan", "Status", "Evidence link"])
     for r, (n, what, services, day, plan) in enumerate(DEPLOYMENTS, 2):
-        for c, v in enumerate([n, what, services, day, plan, "Not started", ""], 1):
+        status = "Done" if n == 1 else "Not started"
+        evidence = "docs/LEARNING_JOURNAL.md#day-1--github-governance-azure-oidc-and-first-local-run" if n == 1 else ""
+        for c, v in enumerate([n, what, services, day, plan, status, evidence], 1):
             cell = ws.cell(row=r, column=c, value=v)
             cell.font = Font(size=10)
             cell.alignment = WRAP
@@ -275,6 +287,12 @@ def main():
     # ---------- Cost Log ----------
     ws = wb.create_sheet("Cost Log")
     header(ws, ["Date", "Resource group", "Service", "Est. cost $", "Actual cost $", "Destroyed?", "Notes"])
+    first_day_cost = [
+        "2026-08-31", "local (no Azure RG)", "GitHub/Entra setup + Docker Compose",
+        0.00, 0.00, "Yes", "Local stack and pgdata volume removed; reusable $0 identity/config retained",
+    ]
+    for c, v in enumerate(first_day_cost, 1):
+        ws.cell(row=2, column=c, value=v).alignment = WRAP
     ws.cell(row=40, column=4, value="TOTAL:").font = Font(bold=True)
     ws.cell(row=40, column=5, value="=SUM(D2:D39)").font = Font(bold=True)
     ws.cell(row=40, column=6, value="=SUM(E2:E39)").font = Font(bold=True)

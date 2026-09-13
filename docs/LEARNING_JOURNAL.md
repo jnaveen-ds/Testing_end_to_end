@@ -20,7 +20,7 @@ A day is complete only after its verification and destroy checklist passes.
 
 | Day | Topic | Status | Planned cost | Actual cost | Cleanup |
 |---|---|---|---:|---:|---|
-| 1 | GitHub governance, GHCR, Azure OIDC, local Compose | In progress | $0 | $0 so far | Pending local Compose cleanup |
+| 1 | GitHub governance, GHCR, Azure OIDC, local Compose | **Done** | $0 | **$0** | Containers and volume destroyed |
 
 ## Day 1 — GitHub governance, Azure OIDC, and first local run
 
@@ -187,7 +187,7 @@ The learner confirmed all three repository secrets were saved. The orb's GitHub 
 cannot list Actions secret metadata (`HTTP 403`), so this step is recorded from that
 confirmation; secret values were intentionally never requested or inspected.
 
-### 8. Run and verify the local application — completed; cleanup pending
+### 8. Run, verify, and destroy the local application — completed
 
 On the learner's computer:
 
@@ -251,7 +251,13 @@ the learner pulled, retagged, and recreated the frontend. Feedback submission cr
 `5917f3bf541a473e973d97c2eb5410a7`, which reached `completed`. The fake provider returned
 positive sentiment, themes `happy`, `analyse`, and `output`, and usage of 10 prompt + 12
 completion tokens at 0 ms. This verifies the browser → nginx → API → database/Redis →
-worker → fake LLM → database → polling-browser path. Final Compose destruction remains.
+worker → fake LLM → database → polling-browser path. Compose cleanup was completed after
+this successful test.
+
+**Cleanup verified:** `docker compose down -v` removed the project containers, network,
+and PostgreSQL test-data volume. `docker compose ps -a` and
+`docker volume ls --filter name=testing_end_to_end` both returned headings with no rows.
+Downloaded images remain as reusable, non-running local layers and incur no cloud cost.
 
 Expected running services: `db`, `redis`, `api`, `worker`, and `frontend`.
 
@@ -450,8 +456,8 @@ Keep these intentional $0 resources because later days reuse them:
 - [x] `AZURE_CLIENT_ID`, `AZURE_TENANT_ID`, and `AZURE_SUBSCRIPTION_ID` are saved as
   GitHub Actions repository secrets
 - [x] Local five-container flow passes and a submitted job reaches `completed`
-- [ ] Local Compose resources and volume are destroyed
-- [ ] Excel Day 1 row is marked `Done`, cost `$0`, and `Destroyed? = Yes`
+- [x] Local Compose resources and PostgreSQL volume are destroyed and verified absent
+- [x] Excel Day 1 row is marked `Done`, cost `$0`, and `Destroyed? = Yes`
 
 ## Daily update template
 
