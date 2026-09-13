@@ -69,7 +69,10 @@ Interactive API docs: http://localhost:8000/docs — every endpoint can be tried
 ```bash
 curl -sI localhost:8080        # HTTP 200, content-type text/html
 ```
-Or open http://localhost:8080 and check: page renders, form accepts text, submitting shows a job id. If the UI loads but submit fails, the problem is API-side (→ 2.1), not frontend.
+Or open http://localhost:8080 and check: page renders, form accepts text, submitting shows
+a job id. If the UI loads but submit returns 404 while `localhost:8000/health` is healthy,
+check that the frontend image contains `frontend/nginx.conf`: `/api/*` must be stripped
+and proxied to `api:8000`. Other submit failures should be traced from the API (→ 2.1).
 
 ### 3. Worker (the most important check)
 

@@ -68,6 +68,15 @@ If the interviewer wants depth, they'll pick a thread — sections below cover e
   updates at the cost of stateful connections. Right-sized choice, not
   ignorance — say that.
 
+### Why does nginx proxy `/api` instead of the browser calling port 8000 directly?
+- The SPA and API share one browser origin, avoiding environment-specific API URLs and
+  CORS dependence. `frontend/src/api.ts` consistently calls `/api`; Vite rewrites it in
+  development and `frontend/nginx.conf` strips the prefix in the container.
+- This boundary must be tested as part of the deployed artifact. The first local image
+  exposed a useful failure: nginx served the SPA but its default configuration returned
+  404 for `POST /api/analyses`. Installing the explicit config in `frontend/Dockerfile`
+  aligned the production container with the documented request path.
+
 ### Why store tokens and latency per job?
 - That's usage metering and observability data captured at the source. In a
   real system it feeds cost tracking per customer and SLO dashboards. Capturing
