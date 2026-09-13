@@ -187,7 +187,7 @@ The learner confirmed all three repository secrets were saved. The orb's GitHub 
 cannot list Actions secret metadata (`HTTP 403`), so this step is recorded from that
 confirmation; secret values were intentionally never requested or inspected.
 
-### 8. Run and verify the local application — not started
+### 8. Run and verify the local application — completed; cleanup pending
 
 On the learner's computer:
 
@@ -245,6 +245,13 @@ had no `/api` proxy. The fix adds `frontend/nginx.conf` to strip `/api`, proxy t
 `api:8000`, and fall back to `index.html` for SPA routes; `frontend/Dockerfile` now copies
 that config into the image. A new frontend image must be published and pulled before the
 submission test is repeated.
+
+**Successful retest:** after PR #3 merged and the corrected frontend image was published,
+the learner pulled, retagged, and recreated the frontend. Feedback submission created job
+`5917f3bf541a473e973d97c2eb5410a7`, which reached `completed`. The fake provider returned
+positive sentiment, themes `happy`, `analyse`, and `output`, and usage of 10 prompt + 12
+completion tokens at 0 ms. This verifies the browser → nginx → API → database/Redis →
+worker → fake LLM → database → polling-browser path. Final Compose destruction remains.
 
 Expected running services: `db`, `redis`, `api`, `worker`, and `frontend`.
 
@@ -442,7 +449,7 @@ Keep these intentional $0 resources because later days reuse them:
 - [x] Contributor role is assigned
 - [x] `AZURE_CLIENT_ID`, `AZURE_TENANT_ID`, and `AZURE_SUBSCRIPTION_ID` are saved as
   GitHub Actions repository secrets
-- [ ] Local five-container flow passes
+- [x] Local five-container flow passes and a submitted job reaches `completed`
 - [ ] Local Compose resources and volume are destroyed
 - [ ] Excel Day 1 row is marked `Done`, cost `$0`, and `Destroyed? = Yes`
 
