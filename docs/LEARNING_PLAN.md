@@ -6,6 +6,107 @@ Companion docs: [DAILY_PLAYBOOK.md](DAILY_PLAYBOOK.md) for planned steps,
 [RUNBOOK.md](RUNBOOK.md), [ARCHITECTURE.md](ARCHITECTURE.md), and
 [INTERVIEW_NOTES.md](INTERVIEW_NOTES.md).
 
+## Accelerated GenAI sprint — Sep 26–27, 2026
+
+The original 28-day sequence is preserved below as the long-term curriculum, but the
+active plan changed when the Azure portal reported **₹19,109.25 credit remaining with an
+expiry date of September 28, 2026**. The portal date is not treated as a promise of access
+through local midnight. Finish and destroy by **8:00 PM IST on September 27**; September
+28 is contingency only.
+
+**Goal:** spend 16 focused hours deploying one intentionally small synchronous FastAPI
+API in the same production-shaped path used by a GenAI application. Maximize coherent
+learning, not the number of unrelated services.
+
+```text
+Client → API Management → Container Apps / FastAPI → Microsoft Foundry model
+                                  │                └→ Azure AI Search → Blob documents
+GitHub OIDC → ACR → revision ─────┤
+Managed identity + RBAC ──────────┤
+Key Vault ────────────────────────┤
+Application Insights + Logs ◀─────┘
+```
+
+### Services in scope and why
+
+| Service | GenAI purpose | Selection |
+|---|---|---|
+| Resource Group + tags | Lifecycle, cost, RBAC, one-command cleanup | One disposable sprint boundary |
+| Microsoft Foundry | Project/model governance and playground | One project; no provisioned throughput |
+| Foundry model deployment | Real chat completion | Small pay-as-you-go model available in the subscription |
+| Azure AI Search | Retrieval and vector search for RAG | Free SKU if available; otherwise Basic only for the exercise window |
+| Blob Storage | Source documents for grounding | Standard LRS; tiny sample files |
+| Azure Container Registry | Private application image supply chain | Basic SKU, deleted on Day 2 |
+| Azure Container Apps | HTTPS, revisions, managed identity, scale-to-zero | Minimal FastAPI container; no VM or AKS |
+| Managed Identity + RBAC | Passwordless service-to-service authentication | Model and data access without stored cloud keys |
+| Key Vault | Learn secret governance and fallback key handling | No model key when managed identity works |
+| API Management | Gateway, rate limit, API contract, central policy | Consumption tier only; optional if provisioning is blocked |
+| Application Insights + Log Analytics | Traces, failures, latency, model-call visibility | Low-volume lab telemetry |
+| Azure Monitor + Cost Management | Alerting and spend control | Budget/alert plus final cost evidence |
+| GitHub Actions OIDC | Secretless build/deploy and revision creation | Reuse the Day 1 federated identity |
+
+The sprint deliberately skips VMs, AKS, managed PostgreSQL, Redis, private endpoints, and
+provisioned model throughput. Those add cost and setup time without improving this
+two-day GenAI learning path.
+
+### Day A — model-to-API deployment (8 hours)
+
+| Block | Outcome |
+|---:|---|
+| 1 | Verify credit/expiry, budget guard, subscription context, regions, quotas, and providers |
+| 2 | Draw the request/identity/data flow; create one tagged sprint resource group |
+| 3 | Create a Foundry resource/project manually and understand its governance boundary |
+| 4 | Deploy a small chat model, test it in the playground, inspect tokens and safety behavior |
+| 5 | Run the minimal synchronous FastAPI `/health` and `/chat` contract locally with provider seam |
+| 6 | Create Basic ACR; build/tag/push the container; understand registry versus running container |
+| 7 | Create Log Analytics, Application Insights, Container Apps environment, and scale-to-zero API |
+| 8 | Enable managed identity, assign least-privilege model access, connect Key Vault, and test HTTPS `/chat` |
+
+### Day B — RAG, operations, delivery, and destruction (8 hours)
+
+| Block | Outcome |
+|---:|---|
+| 9 | Create Standard LRS Blob Storage and upload two harmless sample documents |
+| 10 | Create AI Search, an index, and retrieval fields; inspect lexical results first |
+| 11 | Add embeddings/vector retrieval and prove a grounded RAG response cites the sample data |
+| 12 | Import the OpenAPI contract into APIM Consumption and add a small rate-limit policy |
+| 13 | Exercise model content filters, prompt-injection handling, and one small evaluation set |
+| 14 | Use GitHub OIDC to build/publish/deploy a new immutable revision; no client secret |
+| 15 | Query logs, inspect latency/failures, run a tiny load test, and perform revision rollback |
+| 16 | Capture evidence, review actual cost, delete the sprint group, and prove no billable resources remain |
+
+### Cost guardrails
+
+- **Expected two-day spend:** under ₹500 for tiny traffic when free tiers are available.
+- **Hard learning cap:** ₹1,500; stop before creating anything whose portal estimate could
+  exceed it. Prices and tax vary, so the portal cost view is authoritative.
+- Use pay-as-you-go token deployments only, low token limits, scale-to-zero compute,
+  Standard LRS storage, ACR Basic, and APIM Consumption.
+- If AI Search Free is unavailable, create Basic only during the RAG block and delete it
+  immediately afterward.
+- Never select provisioned throughput, GPU compute, AKS, premium gateways, or private
+  endpoints during this sprint.
+- All planned charges consume Azure credit. Outside-credit spend remains ₹0 unless the
+  owner explicitly upgrades to pay-as-you-go or buys a custom domain; neither is needed.
+
+### What happens after the promotional credit expires
+
+Pay-As-You-Go is an explicit upgrade, not the automatic next state. Without an upgrade,
+Microsoft disables the free-trial subscription and its services when the credit is used
+or the 30-day period ends. If the owner upgrades:
+
+- eligible 12-month service grants continue only until 12 months from the **original
+  signup date**, not 12 months from the upgrade;
+- always-free monthly grants continue within their current service-specific limits;
+- the promotional credit still expires on its original date;
+- non-free services, non-free SKUs, and usage above each grant bill the payment method;
+- Cost Management budgets alert but do not enforce a hard spending cap.
+
+Foundry model tokens, ACR, AI Search Basic when Free is unavailable, Key Vault operations,
+storage, network egress, and telemetry beyond included grants can all bill on PAYG. The
+sprint therefore ends with deletion regardless of whether the account is later upgraded.
+No upgrade is required or authorized by this plan.
+
 ---
 
 ## The rhythm for every deployment exercise

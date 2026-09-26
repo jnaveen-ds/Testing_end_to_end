@@ -21,7 +21,70 @@ A day is complete only after its verification and destroy checklist passes.
 | Day | Topic | Status | Planned cost | Actual cost | Cleanup |
 |---|---|---|---:|---:|---|
 | 1 | GitHub governance, GHCR, Azure OIDC, local Compose | **Done** | $0 | **$0** | Containers and volume destroyed |
-| 2 | Azure hierarchy, Cloud Shell, Resource Groups, AWS comparison | **In progress** | $0 | **$0 so far** | No Azure resource created yet |
+| 2 | Accelerated GenAI deployment sprint | **In progress** | <₹1,500 cap | **₹0 so far** | No sprint resource created yet |
+
+## Schedule change — two-day GenAI deployment sprint
+
+**Confirmed portal evidence:** ₹19,109.25 Azure credit remains and the displayed expiry
+date is September 28, 2026. The offer provides credit for 30 days and does not guarantee
+availability through local midnight on the displayed date. The operational deadline is
+therefore **8:00 PM IST on September 27**, with September 28 reserved only for
+contingency.
+
+The learner can contribute about 16 hours across two days. The old broad schedule is
+paused in favor of one coherent production-shaped GenAI path:
+
+```text
+Client → APIM → Container Apps / FastAPI → Foundry model
+                         │              └→ AI Search → Blob documents
+GitHub OIDC → ACR ───────┤
+Managed identity + RBAC ─┤
+Key Vault ───────────────┤
+App Insights + Logs ◀────┘
+```
+
+The application stays intentionally small: synchronous `/health` and `/chat` endpoints,
+then one grounded RAG path. The learning focus is model deployment, retrieval, identity,
+container delivery, gateway policy, observability, revisions, and teardown—not frontend,
+database, worker, VM, or Kubernetes complexity.
+
+### Sprint cost and safety decision
+
+- Expected tiny-lab usage: under ₹500 when free tiers are available.
+- Hard cap: ₹1,500; portal estimates and Cost Management override rough projections.
+- Use a pay-as-you-go chat model with low token limits, not provisioned throughput.
+- Prefer AI Search Free; if unavailable, use Basic only for the RAG block and delete it.
+- Use ACR Basic, Container Apps scale-to-zero, Storage Standard LRS, and APIM Consumption.
+- Skip VM, AKS, managed databases, premium networking, and private endpoints.
+- All planned charges are Azure-credit eligible. No outside-credit purchase or account
+  upgrade is required or authorized.
+
+### Post-trial clarification
+
+Pay-As-You-Go does not begin automatically. Without an explicit upgrade, the free-trial
+subscription and services are disabled when the credit expires or is exhausted. With an
+upgrade, eligible 12-month grants continue only until 12 months from the original signup,
+and always-free monthly grants remain subject to each service's current quota. The
+promotional credit still expires on September 28.
+
+Anything outside those exact grants bills the payment method. Azure budgets are alerts,
+not hard stops. GenAI model tokens, ACR, AI Search Basic, Key Vault operations, storage,
+egress, and excess telemetry can therefore generate PAYG charges. The sprint resources
+will be destroyed even if the owner later chooses to upgrade. No account upgrade has
+been requested or authorized.
+
+### Two-day completion outcome
+
+- [ ] Foundry chat model is deployed and exercised in the playground
+- [ ] Minimal FastAPI container reaches `/health` and real `/chat` on Container Apps
+- [ ] Managed identity calls the model without a stored model API key
+- [ ] Blob documents are indexed and a RAG answer is grounded through AI Search
+- [ ] APIM exposes the OpenAPI contract and enforces a small rate limit
+- [ ] Application Insights/Logs show requests, latency, and a deliberate failure
+- [ ] GitHub OIDC publishes and deploys an immutable revision
+- [ ] A previous Container Apps revision is restored successfully
+- [ ] Evidence and actual cost are recorded
+- [ ] Sprint resource group is deleted and absence is verified before the deadline
 
 ## Day 2 — Understand Azure's management boundary before deploying
 

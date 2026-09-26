@@ -19,6 +19,36 @@ az configure --defaults location=southindia            # your confirmed region
   before the session; your job is: `terraform plan` → **read it** → `terraform apply`
 - Time flags: ⏱90m / ⏱2h mean budget more than the usual hour that day
 
+## Active schedule override — two-day GenAI sprint
+
+The Azure portal reports **₹19,109.25 remaining, expiring September 28, 2026**. Do not
+assume the credit remains usable through September 28 local midnight. The active deadline
+is **8:00 PM IST September 27**, including destruction. Follow the 16 blocks in
+[LEARNING_PLAN.md § Accelerated GenAI sprint](LEARNING_PLAN.md#accelerated-genai-sprint--sep-2627-2026).
+
+The original day-by-day playbook remains below for later learning, but VM, AKS, database,
+and other unrelated stages are paused. The accelerated path uses a basic synchronous
+FastAPI app and focuses on Foundry/model deployment, AI Search RAG, Blob Storage, ACR,
+Container Apps, managed identity/RBAC, Key Vault, APIM, monitoring, GitHub OIDC, rollback,
+cost review, and mandatory deletion.
+
+Before the first billable resource, Cloud Shell should verify the account and pre-register
+the required resource providers. Provider registration creates no service and costs $0:
+
+```bash
+az account show --query "{Subscription:name,State:state,Default:isDefault}" -o table
+for provider in Microsoft.App Microsoft.ContainerRegistry Microsoft.CognitiveServices \
+  Microsoft.Search Microsoft.Storage Microsoft.KeyVault Microsoft.Insights \
+  Microsoft.OperationalInsights Microsoft.ApiManagement; do
+  az provider register --namespace "$provider"
+done
+az provider list --query "[?namespace=='Microsoft.App' || namespace=='Microsoft.ContainerRegistry' || namespace=='Microsoft.CognitiveServices' || namespace=='Microsoft.Search' || namespace=='Microsoft.Storage' || namespace=='Microsoft.KeyVault' || namespace=='Microsoft.Insights' || namespace=='Microsoft.OperationalInsights' || namespace=='Microsoft.ApiManagement'].{Provider:namespace,State:registrationState}" -o table
+```
+
+Do not paste subscription or tenant IDs into chat. Do not create a provisioned-throughput
+model deployment. Stop if the portal proposes an unexpected paid tier or if a provider is
+blocked by policy; record the blocker and take the documented fallback instead.
+
 ---
 
 ## Day 1 — Mon Aug 31 · GitHub setup, Azure OIDC, and local verification

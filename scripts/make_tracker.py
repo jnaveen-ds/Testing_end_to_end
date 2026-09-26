@@ -129,10 +129,29 @@ DAY_PROGRESS = {
     2: (
         "In progress",
         "",
-        "Company-managed Windows laptop requires an IT administrator for Azure CLI installation. "
-        "Use ephemeral Azure Cloud Shell; no resource has been created yet.",
+        "Accelerated two-day GenAI sprint started after portal confirmed INR 19,109.25 credit "
+        "expires Sep 28. Use ephemeral Cloud Shell; destroy by Sep 27 20:00 IST.",
     ),
 }
+
+SPRINT_BLOCKS = [
+    (1, "Day A", "Expiry, budget, subscription, quotas, providers", "Cost Management, Resource Providers", "₹0"),
+    (2, "Day A", "Architecture + tagged disposable resource group", "Resource Group, RBAC, tags", "₹0"),
+    (3, "Day A", "Create Foundry resource and project manually", "Microsoft Foundry", "usage-based"),
+    (4, "Day A", "Deploy/test a small pay-as-you-go chat model", "Foundry Models", "<₹100 target"),
+    (5, "Day A", "Minimal synchronous FastAPI /health + /chat", "Local Python/Docker", "₹0"),
+    (6, "Day A", "Build, tag, and push private image", "ACR Basic", "<₹30 target"),
+    (7, "Day A", "Deploy HTTPS scale-to-zero API with telemetry", "Container Apps, Log Analytics, App Insights", "<₹100 target"),
+    (8, "Day A", "Managed identity, least privilege, Key Vault", "Entra ID, RBAC, Key Vault", "<₹20 target"),
+    (9, "Day B", "Upload two safe grounding documents", "Blob Storage Standard LRS", "<₹10 target"),
+    (10, "Day B", "Create search service/index and lexical retrieval", "Azure AI Search", "Free preferred"),
+    (11, "Day B", "Embeddings, vector retrieval, grounded RAG", "AI Search + Foundry embedding/chat models", "<₹100 target"),
+    (12, "Day B", "Import OpenAPI and add rate limiting", "APIM Consumption", "near ₹0"),
+    (13, "Day B", "Content filters, prompt injection, mini evaluation", "Foundry safety/evaluation", "<₹100 target"),
+    (14, "Day B", "OIDC build/publish/deploy immutable revision", "GitHub Actions, ACR, Container Apps", "<₹50 target"),
+    (15, "Day B", "Logs, tiny load test, alert, revision rollback", "Azure Monitor, Container Apps revisions", "<₹100 target"),
+    (16, "Day B", "Evidence, actual cost, delete and prove absence", "Cost Management, Resource Group", "₹0"),
+]
 
 # Per-day cost model. Rates are approximate pay-as-you-go list prices (USD,
 # ~East US; South India similar for these SKUs). Azure free-account allowances
@@ -203,16 +222,16 @@ def main():
     ws.title = "Overview"
     lines = [
         ("Azure / DevOps Learning Tracker", ""),
-        ("App", "Feedback Analyzer (FastAPI + Celery + React) - one app, many deployments"),
-        ("Window", "Aug 31 - Sep 27 2026, ~1 h/day (Day 22 AKS = 2 h)"),
-        ("Budget", "$200 trial credit; planned spend ~$8-15 (see Day Cost Plan); destroy same-day"),
+        ("Active app", "Minimal synchronous FastAPI GenAI API - deployment depth over app complexity"),
+        ("Active window", "Sep 26-27 2026, 16-hour accelerated sprint; destroy by Sep 27 20:00 IST"),
+        ("Credit evidence", "INR 19,109.25 remaining; portal displays Sep 28 expiry; do not rely on Sep 28"),
+        ("Sprint budget", "Expected <INR 500; hard cap INR 1,500; see 'GenAI Sprint' tab"),
         ("Golden rule", "A day is Done only when Destroyed? = Yes (except keep-listed items)"),
         ("Your role", "Portal clicks, az commands, terraform plan review + apply, verification"),
         ("Agent's job", "TF files + exact commands prepared before each session; docs updated"),
         ("Docs", "docs/LEARNING_PLAN.md · docs/DAILY_PLAYBOOK.md · docs/RUNBOOK.md"),
-        ("Website deployment", "Day 19 (Sat Sep 19): React UI on Azure Static Web Apps, its own URL"),
-        ("Deployments target", "10 tracked deployments — see 'Deployments' tab"),
-        ("Cost tab", "'Day Cost Plan' = planned cost per day + cumulative; 'Cost Log' = what you actually spent"),
+        ("Paused curriculum", "The original 28-day plan remains for later; VM, AKS, database, and frontend stages are paused"),
+        ("Cost tabs", "'GenAI Sprint' tracks the active blocks; legacy Day Cost Plan is retained; Cost Log records actuals"),
     ]
     for i, (a, b) in enumerate(lines, 1):
         ws.cell(row=i, column=1, value=a).font = Font(bold=True, size=14 if i == 1 else 10)
@@ -220,6 +239,28 @@ def main():
         cb.alignment = WRAP
         cb.font = Font(size=10)
     set_widths(ws, [26, 100])
+
+    # ---------- Accelerated GenAI Sprint ----------
+    ws = wb.create_sheet("GenAI Sprint")
+    header(ws, ["Block", "Sprint day", "Outcome", "Azure services", "Cost guardrail", "Status", "Evidence", "Destroyed?"])
+    for r, (block, sprint_day, outcome, services, cost) in enumerate(SPRINT_BLOCKS, 2):
+        vals = [block, sprint_day, outcome, services, cost, "Not started", "", ""]
+        for c, v in enumerate(vals, 1):
+            cell = ws.cell(row=r, column=c, value=v)
+            cell.font = Font(size=10)
+            cell.alignment = WRAP
+    dv = DataValidation(type="list", formula1='"Not started,In progress,Done,Skipped,Blocked"', allow_blank=True)
+    ws.add_data_validation(dv)
+    dv.add(f"F2:F{len(SPRINT_BLOCKS) + 1}")
+    dv2 = DataValidation(type="list", formula1='"Yes,No,-"', allow_blank=True)
+    ws.add_data_validation(dv2)
+    dv2.add(f"H2:H{len(SPRINT_BLOCKS) + 1}")
+    ws.cell(row=len(SPRINT_BLOCKS) + 3, column=1, value="Deadline").font = Font(bold=True)
+    ws.cell(row=len(SPRINT_BLOCKS) + 3, column=2, value="Delete sprint RG and verify absence by Sep 27 20:00 IST")
+    ws.cell(row=len(SPRINT_BLOCKS) + 4, column=1, value="Hard cap").font = Font(bold=True)
+    ws.cell(row=len(SPRINT_BLOCKS) + 4, column=2, value="INR 1,500; stop before any unexpected paid tier")
+    set_widths(ws, [7, 12, 44, 38, 18, 14, 30, 12])
+    ws.freeze_panes = "C2"
 
     # ---------- Daily Plan ----------
     ws = wb.create_sheet("Daily Plan")

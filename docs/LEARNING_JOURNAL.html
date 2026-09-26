@@ -146,7 +146,7 @@
     .stat small { color: var(--muted); }
 
     .progress-track { height: 10px; margin-top: .8rem; overflow: hidden; border-radius: 99px; background: #dfe7f1; }
-    .progress-fill { width: 3.57%; height: 100%; border-radius: inherit; background: linear-gradient(90deg, var(--azure), var(--cyan)); }
+    .progress-fill { width: 0%; height: 100%; border-radius: inherit; background: linear-gradient(90deg, var(--azure), var(--cyan)); }
 
     .flow { display: grid; grid-template-columns: repeat(4, 1fr); gap: .8rem; }
     .flow-card { position: relative; min-width: 0; padding: 1rem; border-radius: 14px; background: var(--white); border: 1px solid var(--line); }
@@ -235,14 +235,14 @@
 <body>
   <header class="hero">
     <div class="hero-inner">
-      <p class="eyebrow">28-day hands-on roadmap</p>
-      <h1>Azure DevOps<br>Learning Journey</h1>
+      <p class="eyebrow">Accelerated 16-hour deployment sprint</p>
+      <h1>Azure GenAI + DevOps<br>Learning Journey</h1>
       <p class="hero-copy">One small application. Many deployment paths. Every service learned manually first, automated second, and destroyed safely.</p>
       <div class="hero-meta">
-        <span class="pill">Day 2 · In progress</span>
-        <span class="pill">Budget · $200 Azure credit</span>
-        <span class="pill">Today · $0</span>
-        <span class="pill">Deadline · Sep 27, 2026</span>
+        <span class="pill">Two-day GenAI sprint</span>
+        <span class="pill">Credit · ₹19,109.25</span>
+        <span class="pill">Actual spend · ₹0</span>
+        <span class="pill">Destroy · Sep 27, 8 PM IST</span>
       </div>
     </div>
   </header>
@@ -250,6 +250,7 @@
   <div class="jumpbar">
     <nav aria-label="Page sections">
       <a href="#overview">Overview</a>
+      <a href="#sprint">GenAI sprint</a>
       <a href="#day2">Day 2 · Azure foundations</a>
       <a href="#flow">Learning flow</a>
       <a href="#github">GitHub</a>
@@ -263,15 +264,55 @@
   <main>
     <section id="overview" aria-labelledby="overview-title">
       <div class="stats">
-        <article class="stat"><span class="stat-label">Current day</span><strong>2 of 28</strong><small>Azure foundations</small></article>
-        <article class="stat"><span class="stat-label">Days complete</span><strong>1 of 28</strong><div class="progress-track" aria-label="1 of 28 learning days complete"><div class="progress-fill"></div></div></article>
-        <article class="stat"><span class="stat-label">Azure cost today</span><strong>$0.00</strong><small>Outside $200 credit: $0</small></article>
-        <article class="stat"><span class="stat-label">Current focus</span><strong>Why first</strong><small>Understand before creating</small></article>
+        <article class="stat"><span class="stat-label">Sprint window</span><strong>16 hours</strong><small>September 26–27</small></article>
+        <article class="stat"><span class="stat-label">Blocks complete</span><strong>0 of 16</strong><div class="progress-track" aria-label="0 of 16 sprint blocks complete"><div class="progress-fill"></div></div></article>
+        <article class="stat"><span class="stat-label">Hard cost cap</span><strong>₹1,500</strong><small>Expected under ₹500</small></article>
+        <article class="stat"><span class="stat-label">Current focus</span><strong>Block 1</strong><small>Expiry, budget, providers</small></article>
       </div>
       <div class="section-head" style="margin-top: 2.2rem">
-        <p class="eyebrow" style="color: var(--azure)">Day 2 objective</p>
-        <h2 id="overview-title">Understand Azure's boundary before deploying</h2>
-        <p>Learn what a resource group solves, where it sits in Azure, how it differs from AWS, and why today's disposable exercise costs $0.</p>
+        <p class="eyebrow" style="color: var(--azure)">Active objective</p>
+        <h2 id="overview-title">Deploy a small app through a real GenAI platform path</h2>
+        <p>Keep FastAPI simple and concentrate learning on model deployment, RAG, identity, containers, gateway policy, telemetry, CI/CD, rollback, and verified destruction.</p>
+      </div>
+    </section>
+
+    <section id="sprint" aria-labelledby="sprint-title">
+      <div class="section-head"><p class="eyebrow" style="color: var(--amber)">Schedule accelerated</p><h2 id="sprint-title">Two-day production-shaped GenAI sprint</h2><p>The portal confirms ₹19,109.25 remaining and displays September 28, 2026 as the expiry date. Because it does not promise local-midnight access, all resources must be deleted by 8:00 PM IST September 27.</p></div>
+      <div class="callout warning"><strong>September 28 is contingency, not a working day.</strong> The free offer ends after its 30-day validity period. Do not leave teardown until the displayed expiry date.</div>
+      <article class="panel">
+        <h3>Request, data, identity, and delivery flow</h3>
+        <pre><code>Client → API Management → Container Apps / FastAPI → Microsoft Foundry model
+                                  │                └→ Azure AI Search → Blob documents
+GitHub OIDC → ACR → revision ─────┤
+Managed identity + RBAC ──────────┤
+Key Vault ────────────────────────┤
+Application Insights + Logs ◀─────┘</code></pre>
+      </article>
+
+      <div class="section-head" style="margin-top: 2rem"><h2>Why these services</h2><p>Each component owns one real GenAI production concern; unrelated infrastructure is deliberately excluded.</p></div>
+      <article class="panel">
+        <table>
+          <thead><tr><th>Concern</th><th>Selected service</th><th>Reason</th></tr></thead>
+          <tbody>
+            <tr><td>Model lifecycle</td><td>Microsoft Foundry + pay-as-you-go chat model</td><td>Deployment, playground, tokens, quota, and safety without provisioned throughput.</td></tr>
+            <tr><td>Grounding</td><td>Blob Storage + Azure AI Search</td><td>Source documents, lexical retrieval, embeddings, and vector RAG.</td></tr>
+            <tr><td>Application supply chain</td><td>ACR Basic + Container Apps</td><td>Private image, HTTPS, scale-to-zero, identity, revisions, and rollback without VM/AKS.</td></tr>
+            <tr><td>Secretless security</td><td>Managed Identity + RBAC + Key Vault</td><td>Model/data authorization without a stored cloud API key; governed fallback secrets.</td></tr>
+            <tr><td>API governance</td><td>APIM Consumption</td><td>OpenAPI import, rate limiting, and a stable gateway boundary.</td></tr>
+            <tr><td>Operations</td><td>Application Insights, Log Analytics, Monitor</td><td>Requests, latency, failures, logs, and alerts.</td></tr>
+            <tr><td>Delivery</td><td>GitHub Actions OIDC</td><td>Build and deploy immutable revisions without a client secret.</td></tr>
+          </tbody>
+        </table>
+      </article>
+
+      <div class="two-col">
+        <article class="panel"><h3>Day A · model to HTTPS API</h3><ol><li>Credit, budget, quota, providers</li><li>Architecture and tagged resource group</li><li>Foundry resource and project</li><li>Small chat-model deployment</li><li>Minimal FastAPI <code>/health</code> and <code>/chat</code></li><li>ACR build and push</li><li>Container Apps + telemetry</li><li>Managed identity, RBAC, Key Vault</li></ol></article>
+        <article class="panel"><h3>Day B · RAG to teardown</h3><ol><li>Blob grounding documents</li><li>AI Search index and lexical retrieval</li><li>Embeddings and vector RAG</li><li>APIM OpenAPI and rate limit</li><li>Safety and mini evaluation</li><li>GitHub OIDC revision deploy</li><li>Logs, load test, alert, rollback</li><li>Evidence, cost, deletion proof</li></ol></article>
+      </div>
+
+      <div class="two-col">
+        <article class="panel"><h3>Cost guardrails</h3><ul><li>Expected under ₹500; hard stop at ₹1,500.</li><li>AI Search Free preferred; Basic only for the short RAG block.</li><li>ACR Basic, Storage Standard LRS, APIM Consumption, scale-to-zero compute.</li><li>No AKS, VM, database, GPU, premium gateway, private endpoint, or provisioned model throughput.</li></ul></article>
+        <article class="panel"><h3>What happens after expiry</h3><p>Pay-As-You-Go is an explicit upgrade, not automatic. Without it, the trial subscription is disabled. If upgraded, 12-month grants still run from the original signup date and always-free grants retain service-specific limits.</p><div class="callout warning">Budgets alert; they do not stop spend. Model tokens, ACR, AI Search Basic, Key Vault operations, storage, egress, and excess telemetry can bill. No upgrade is required or authorized for this sprint.</div></article>
       </div>
     </section>
 
