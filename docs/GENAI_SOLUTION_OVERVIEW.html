@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Three GenAI Applications — Solution Overview</title>
+  <style>
+    :root { --ink:#152033; --muted:#56647a; --line:#dbe4f0; --blue:#0878d1; --cyan:#12a7c7; --violet:#7057d9; --green:#16845b; --amber:#b46400; --paper:#f5f8fc; --card:#fff; }
+    * { box-sizing:border-box; }
+    html { scroll-behavior:smooth; }
+    body { margin:0; overflow-x:hidden; color:var(--ink); background:var(--paper); font:16px/1.58 Inter,Segoe UI,Arial,sans-serif; }
+    header { color:#fff; padding:4rem 1.25rem 3.3rem; background:linear-gradient(125deg,#071f3d,#075aa4 54%,#5636ad); }
+    header > div, main, nav > div { max-width:1180px; margin:auto; }
+    .eyebrow { letter-spacing:.13em; text-transform:uppercase; font-weight:800; font-size:.76rem; opacity:.82; }
+    h1 { margin:.35rem 0 1rem; font-size:clamp(2.1rem,5vw,4.2rem); line-height:1.03; max-width:950px; }
+    header p { max-width:850px; font-size:1.12rem; opacity:.92; }
+    .pills { display:flex; gap:.6rem; flex-wrap:wrap; margin-top:1.4rem; }
+    .pill { padding:.38rem .72rem; border:1px solid #ffffff55; border-radius:999px; background:#ffffff14; font-size:.84rem; }
+    nav { position:sticky; top:0; z-index:5; background:#fff; border-bottom:1px solid var(--line); overflow:auto; }
+    nav > div { display:flex; gap:.25rem; padding:.55rem 1rem; width:max-content; min-width:100%; max-width:none; margin:0; }
+    nav a { color:#32445e; text-decoration:none; font-weight:700; font-size:.86rem; padding:.5rem .7rem; border-radius:.55rem; }
+    nav a:hover { background:#eaf3fc; color:#075aa4; }
+    main { padding:2rem 1rem 5rem; }
+    section { scroll-margin-top:4.5rem; margin:0 0 3rem; }
+    h2 { font-size:clamp(1.55rem,3vw,2.3rem); margin:0 0 .45rem; }
+    h3 { margin:.15rem 0 .6rem; font-size:1.15rem; }
+    .lead { color:var(--muted); max-width:900px; margin-top:0; }
+    .grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:1rem; }
+    .two { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:1rem; }
+    .card { background:var(--card); border:1px solid var(--line); border-radius:1rem; padding:1.15rem; box-shadow:0 8px 28px #1c3f6810; }
+    .card.chat { border-top:5px solid var(--blue); }
+    .card.rag { border-top:5px solid var(--cyan); }
+    .card.agent { border-top:5px solid var(--violet); }
+    .number { width:2rem; height:2rem; display:grid; place-items:center; border-radius:.6rem; color:#fff; background:var(--blue); font-weight:900; margin-bottom:.7rem; }
+    .rag .number { background:var(--cyan); } .agent .number { background:var(--violet); }
+    .tag { display:inline-block; margin:.15rem .15rem .15rem 0; padding:.2rem .48rem; border-radius:.45rem; background:#eaf3fc; color:#075aa4; font-size:.77rem; font-weight:700; }
+    pre { white-space:pre; overflow:auto; background:#091a2e; color:#d9ecff; padding:1rem; border-radius:.8rem; line-height:1.45; font-size:.82rem; }
+    table { width:100%; border-collapse:collapse; background:#fff; border:1px solid var(--line); }
+    th,td { text-align:left; vertical-align:top; padding:.72rem; border-bottom:1px solid var(--line); }
+    th { background:#eaf3fc; font-size:.82rem; text-transform:uppercase; letter-spacing:.04em; }
+    .callout { padding:1rem; margin:1rem 0; border-left:5px solid var(--blue); background:#eaf3fc; border-radius:.6rem; }
+    .warning { border-left-color:var(--amber); background:#fff4df; }
+    .flow { display:grid; grid-template-columns:repeat(5,1fr); gap:.5rem; align-items:stretch; }
+    .flow div { position:relative; padding:.8rem; border:1px solid var(--line); border-radius:.7rem; background:#fff; text-align:center; font-size:.86rem; font-weight:700; }
+    .flow div:not(:last-child)::after { content:"→"; position:absolute; right:-.55rem; top:35%; color:var(--blue); z-index:1; }
+    code { background:#eef2f7; padding:.08rem .28rem; border-radius:.3rem; font-size:.9em; }
+    footer { text-align:center; color:var(--muted); border-top:1px solid var(--line); padding:2rem 1rem; }
+    @media (max-width:850px) { .grid,.two { grid-template-columns:1fr; } .flow { grid-template-columns:1fr; } .flow div::after { display:none; } table { display:block; overflow:auto; } header { padding-top:3rem; } }
+    @media print { nav { display:none; } body { background:#fff; } .card { box-shadow:none; break-inside:avoid; } }
+  </style>
+</head>
+<body>
+  <header>
+    <div>
+      <div class="eyebrow">Document 1 · Understand before building</div>
+      <h1>Three GenAI Applications<br>Problem → Architecture → Solution</h1>
+      <p>A simple React + FastAPI learning platform for real-time inference, grounded RAG, and a long-running approval-gated agent on Azure.</p>
+      <div class="pills"><span class="pill">React + TypeScript</span><span class="pill">FastAPI</span><span class="pill">Manual first → automate</span><span class="pill">Destroy every lab</span></div>
+    </div>
+  </header>
+  <nav><div><a href="#lens">Decision lens</a><a href="#system">Whole system</a><a href="#chat">1 · Chat</a><a href="#rag">2 · Document Q&amp;A</a><a href="#agent">3 · Agent</a><a href="#shared">Tradeoffs</a><a href="#security">Security</a><a href="#delivery">Deployment</a><a href="#complete">Complete means</a></div></nav>
+  <main>
+    <section>
+      <h2>Three problems, one deliberately simple platform</h2>
+      <p class="lead">One shared React SPA provides three pages. Each page calls a small FastAPI API through APIM. Internal Azure services remain behind FastAPI, reducing UI complexity and preventing cloud credentials from reaching the browser.</p>
+      <div class="grid">
+        <article class="card chat"><div class="number">1</div><h3>Real-time Chat</h3><p>Return a model answer quickly while handling bursts, avoiding repeated token spend, serving trusted HTTPS, and supporting rollback.</p><span class="tag">Container Apps</span><span class="tag">Redis</span><span class="tag">Foundry</span></article>
+        <article class="card rag"><div class="number">2</div><h3>Document Q&amp;A</h3><p>Answer from private documents with retrieval evidence and citations instead of relying only on model memory.</p><span class="tag">Blob</span><span class="tag">AI Search</span><span class="tag">RAG</span></article>
+        <article class="card agent"><div class="number">3</div><h3>Approval-gated Agent</h3><p>Run long work only after a human approves the exact plan; survive waits, absorb bursts, expire stale work, and audit decisions.</p><span class="tag">Durable Functions</span><span class="tag">Service Bus</span><span class="tag">Cosmos DB</span></article>
+      </div>
+    </section>
+
+    <section id="lens">
+      <h2>A reusable engineering decision lens</h2>
+      <p class="lead">Every service, TTL, queue, cache, and deployment strategy is evaluated beyond setup instructions.</p>
+      <div class="grid"><article class="card"><h3>Value</h3><ul><li>Problem solved</li><li>When to use</li><li>When not to use</li><li>Important alternative</li></ul></article><article class="card"><h3>Tradeoffs</h3><ul><li>Cost meter and controls</li><li>Latency added or removed</li><li>Scaling signal and quota</li><li>Security/trust boundary</li></ul></article><article class="card"><h3>Operations</h3><ul><li>Failure and recovery</li><li>Timeout/retry/idempotency</li><li>Verification evidence</li><li>Destroy/retention action</li></ul></article></div>
+      <div class="callout warning">Prices vary by region, offer, date, and SKU. Learn the meter and relative tradeoff here; use the portal estimate and Cost Management as the authoritative amount before creation.</div>
+    </section>
+
+    <section id="system">
+      <h2>Whole-system architecture</h2>
+      <p class="lead">Shared delivery, identity, and telemetry; separate runtime and scaling boundaries.</p>
+      <pre>┌──────────────── React SPA · Static Web Apps ────────────────┐
+│ Chat page          Documents page          Agent page       │
+└───────────────────────────┬─────────────────────────────────┘
+                            │ HTTPS
+                     ┌──────▼──────┐
+                     │    APIM     │
+                     └─┬────┬────┬─┘
+                       │    │    │
+       ┌───────────────┘    │    └─────────────────┐
+       ▼                    ▼                      ▼
+ Chat FastAPI          RAG FastAPI           Agent FastAPI
+ Container Apps        Container Apps        Container Apps
+   │       │              │      │                 │
+ Redis   Foundry       Search   Blob        Durable Functions
+                             + Foundry              │ approved
+                                             Service Bus → worker
+                                                    │
+                                                 Cosmos
+
+Shared: ACR · managed identity/RBAC · Key Vault · App Insights/Logs
+Delivery: required PR checks → immutable SHA image → GitHub OIDC → revisions</pre>
+      <div class="callout"><strong>Why separate APIs?</strong> Chat and retrieval scale independently, long agent work cannot starve synchronous traffic, and each bad revision can be isolated and rolled back.</div>
+    </section>
+
+    <section id="chat">
+      <div class="eyebrow" style="color:var(--blue)">App 1 · synchronous</div><h2>Real-time Chat</h2>
+      <div class="two">
+        <article class="card chat"><h3>Problem statement</h3><p>Calling the model for every identical safe request wastes latency and tokens. The API must handle concurrent users, scale down while idle, use trusted HTTPS, and roll back safely.</p><h3>Success</h3><ul><li>First request is MISS; second identical request is HIT.</li><li>20 duplicate misses create one model call.</li><li>Replicas scale and return to zero.</li><li>Bad revision is diagnosed and rolled back.</li></ul></article>
+        <article class="card"><h3>How we address it</h3><ol><li>Container Apps gives Fargate-style managed container runtime.</li><li>FastAPI computes a tenant/model/prompt-version-aware cache key.</li><li>Managed Redis stores only safe successful output with TTL.</li><li><code>SET NX</code> distributed lock prevents a stampede.</li><li>APIM and Container Apps provide managed TLS.</li><li>Immutable revisions provide rollback.</li></ol></article>
+      </div>
+      <div class="flow"><div>React prompt</div><div>APIM HTTPS + limit</div><div>FastAPI cache key</div><div>Redis HIT or Foundry MISS</div><div>Answer + usage</div></div>
+      <p><strong>Use when:</strong> short stateless inference, bursty traffic, reusable safe results. <strong>Avoid when:</strong> work waits for a person, has non-repeatable side effects, or personalized data is not isolated in the cache key.</p>
+    </section>
+
+    <section id="rag">
+      <div class="eyebrow" style="color:var(--cyan)">App 2 · grounded</div><h2>Document Q&amp;A</h2>
+      <div class="two">
+        <article class="card rag"><h3>Problem statement</h3><p>Users need answers based on private documents, with citations, and an honest refusal when the supplied material does not contain the answer.</p><h3>Success</h3><ul><li>Blob files remain private.</li><li>Lexical/vector retrieval finds the expected chunk.</li><li>Known answer cites source metadata.</li><li>Unknown answer does not hallucinate.</li></ul></article>
+        <article class="card"><h3>How we address it</h3><ol><li>Blob is the durable document source of truth.</li><li>Documents are chunked with source metadata.</li><li>Lexical search is verified before vector search.</li><li>Only bounded top-k evidence enters the model prompt.</li><li>Citations come from retrieved metadata.</li><li>Content Safety is observed separately from retrieval quality.</li></ol></article>
+      </div>
+      <pre>Ingest: React → FastAPI → private Blob → chunk/embed → AI Search
+Ask:    React → APIM → FastAPI → safety → Search top-k → Foundry → cited answer</pre>
+      <p><strong>Use when:</strong> knowledge is private/changing and traceable evidence matters. <strong>Avoid when:</strong> exact transactional data should come from SQL/APIs or access-control metadata is missing.</p>
+    </section>
+
+    <section id="agent">
+      <div class="eyebrow" style="color:var(--violet)">App 3 · asynchronous + human decision</div><h2>Approval-gated Agent</h2>
+      <div class="two">
+        <article class="card agent"><h3>Problem statement</h3><p>Long agent work may need a human to approve the exact plan. It must survive restarts, buffer bursts, expire stale work, retry safely, and preserve an audit trail.</p><h3>Success</h3><ul><li>FastAPI returns <code>202</code> and run ID immediately.</li><li>Approve continues; reject/timeout executes nothing.</li><li>Duplicate/changed-plan approval is safe.</li><li>Queue retry, DLQ, and replay are visible.</li></ul></article>
+        <article class="card"><h3>How we address it</h3><ol><li>Durable Functions checkpoints the plan and wait state.</li><li>External approval event races a 10-minute durable timer.</li><li>Approval binds to user, timestamp, and immutable plan hash.</li><li>Service Bus absorbs bursts and caps worker concurrency.</li><li>Idempotent transitions prevent duplicate side effects.</li><li>Cosmos stores product status/audit and expires lab data.</li></ol></article>
+      </div>
+      <div class="flow"><div>React submits</div><div>FastAPI returns 202</div><div>Durable wait</div><div>Approve → Service Bus</div><div>Worker → Cosmos result</div></div>
+      <h3>TTL is not one setting</h3>
+      <table><thead><tr><th>Control</th><th>Purpose</th><th>Expiry result</th></tr></thead><tbody><tr><td>Redis TTL</td><td>Cache freshness</td><td>Recompute next request</td></tr><tr><td>Service Bus TTL</td><td>Queued-command freshness</td><td>Dead-letter</td></tr><tr><td>Approval timer</td><td>Human decision deadline</td><td>Expired; no action</td></tr><tr><td>Cosmos item TTL</td><td>Lab retention</td><td>Record removed</td></tr></tbody></table>
+      <div class="two"><article class="card"><h3>Cost + latency</h3><ul><li>Redis hit adds milliseconds but removes model seconds/tokens.</li><li>Queue wait intentionally increases completion time while protecting model quotas.</li><li>Durable timer uses small function/storage operations and no waiting worker.</li><li>Cosmos TTL limits storage growth; deletion is asynchronous.</li></ul></article><article class="card"><h3>Security</h3><ul><li>Cache key includes tenant/auth scope; never cache secrets/errors.</li><li>Message expiry is not authorization.</li><li>Approval binds actor + exact plan hash + deadline.</li><li>Audit retention TTL must follow legal policy, not convenience.</li></ul></article></div>
+      <p><strong>Use when:</strong> work is long, bursty, rate-limited, or approval/audit is required. <strong>Avoid when:</strong> a short request suffices, approvers are not authenticated, or side effects are not idempotent.</p>
+    </section>
+
+    <section id="shared">
+      <h2>Shared platform decisions</h2>
+      <table><thead><tr><th>Concern</th><th>Choice</th><th>Why</th><th>Alternative</th></tr></thead><tbody>
+        <tr><td>Website</td><td>Static Web Apps Free</td><td>Simple React hosting + managed HTTPS</td><td>Container Apps for server-rendered frontend</td></tr>
+        <tr><td>Runtime</td><td>Container Apps</td><td>Fargate-style service, revisions, scale-to-zero</td><td>ACI raw container; AKS full Kubernetes</td></tr>
+        <tr><td>Gateway</td><td>APIM Consumption</td><td>Stable routes, TLS, rate limits</td><td>Direct ingress for simpler internal APIs</td></tr>
+        <tr><td>Cache</td><td>Managed Redis briefly</td><td>Shared low-latency cache + lock</td><td>Local Redis if estimate is too high</td></tr>
+        <tr><td>Retrieval</td><td>Blob + AI Search</td><td>Durable source + rebuildable vector index</td><td>Database vector extension</td></tr>
+        <tr><td>Workflow</td><td>Durable Functions</td><td>External event + durable timer</td><td>Explicit custom state machine</td></tr>
+        <tr><td>Queue</td><td>Service Bus</td><td>TTL, lock, retry, DLQ</td><td>Storage Queue for simpler needs</td></tr>
+        <tr><td>Status/audit</td><td>Cosmos free tier if eligible</td><td>Flexible status + item TTL</td><td>Table Storage fallback</td></tr>
+      </tbody></table>
+      <div class="callout warning"><strong>Current Redis note:</strong> legacy Azure Cache for Redis is retiring and new public-cloud creation is blocked for new customers. Use Azure Managed Redis only after checking its paid estimate; otherwise run local Redis for the cache exercise.</div>
+      <h3>Cost, latency, and security snapshot</h3>
+      <table><thead><tr><th>Service</th><th>Cost control</th><th>Latency effect</th><th>Security action</th></tr></thead><tbody><tr><td>Container Apps</td><td>min 0, bounded max replicas</td><td>possible cold start</td><td>managed identity + managed TLS</td></tr><tr><td>Foundry</td><td>bounded input/output tokens</td><td>dominant model latency</td><td>no prompts/secrets in broad logs</td></tr><tr><td>Redis</td><td>paid provisioned; one block only</td><td>ms hit replaces seconds</td><td>TLS, Entra, tenant-scoped keys</td></tr><tr><td>AI Search</td><td>Free SKU or immediate destroy</td><td>retrieval hop reduces prompt size</td><td>document/tenant ACL filters</td></tr><tr><td>Service Bus</td><td>grant/operations; short-lived namespace</td><td>intentional queue delay</td><td>RBAC, minimal payload, DLQ</td></tr><tr><td>Cosmos</td><td>free/serverless eligibility, point reads</td><td>fast partition-key lookup</td><td>tenant partition + retention policy</td></tr><tr><td>Logs</td><td>sampling and short retention</td><td>async export; avoid excess</td><td>redact prompts, files, credentials</td></tr></tbody></table>
+    </section>
+
+    <section id="security">
+      <h2>Trust, security, and failure boundaries</h2>
+      <div class="two">
+        <article class="card"><h3>Trust path</h3><pre>Browser ─HTTPS─▶ Static Web Apps / APIM
+APIM ─HTTPS─▶ Container Apps FastAPI
+FastAPI identity ─RBAC/TLS─▶ Azure services</pre><ul><li>No service credentials in React/Vite variables.</li><li>Application identities receive narrow data roles.</li><li>Internal workflow/queue endpoints are not public.</li><li>Approval binds to authenticated actor and plan hash.</li></ul></article>
+        <article class="card"><h3>Honest failure behavior</h3><ul><li>Redis down → bounded direct model path or explicit failure.</li><li>Search down → dependency error, never fake grounding.</li><li>Worker down → queue retains work and UI says queued.</li><li>Model transient error → bounded retry, never cache failure.</li><li>Bad revision → readiness/smoke fails; restore prior revision.</li></ul></article>
+      </div>
+    </section>
+
+    <section id="delivery">
+      <h2>Delivery architecture</h2>
+      <div class="flow"><div>Feature branch + PR</div><div>Required backend/frontend checks</div><div>Immutable SHA artifacts</div><div>GitHub OIDC deploy</div><div>Smoke → activate or rollback</div></div>
+      <div class="callout"><strong>Two different approvals:</strong> a GitHub environment approval authorizes deployment; the Agent application's approval authorizes one specific runtime plan. They must not be confused.</div>
+      <p>Local and CI use fake providers. Azure credentials are short-lived OIDC tokens. Deployed Container Apps use immutable image tags and create revisions so evidence and rollback point to exact code.</p>
+      <h3>Choose a deployment strategy intentionally</h3>
+      <table><thead><tr><th>Strategy</th><th>When</th><th>Cost/availability</th><th>Risk control</th></tr></thead><tbody><tr><td>Recreate</td><td>disposable/noncritical</td><td>lowest cost; downtime</td><td>simple, no live rollback window</td></tr><tr><td>Rolling</td><td>compatible replica update</td><td>small overlap; mixed versions</td><td>backward-compatible API/schema</td></tr><tr><td>Revision swap</td><td>this sprint/default Container Apps</td><td>brief overlap; fast rollback</td><td>immutable SHA + smoke + preserve prior</td></tr><tr><td>Blue-green</td><td>high-confidence cutover</td><td>roughly duplicate capacity</td><td>avoid duplicate side effects/schema drift</td></tr><tr><td>Canary</td><td>small traffic experiment</td><td>two revisions + monitoring</td><td>metrics, stop thresholds, policy parity</td></tr><tr><td>Shadow</td><td>compare model/prompt invisibly</td><td>can double token cost</td><td>no mirrored side effects; redact data</td></tr></tbody></table>
+      <div class="callout"><strong>Lab choice:</strong> Container Apps revision swap. Deploy an immutable SHA, warm/smoke it, activate it, then deliberately restore the previous revision.</div>
+    </section>
+
+    <section id="complete">
+      <h2>Definition of complete</h2>
+      <div class="grid">
+        <article class="card"><h3>Product</h3><ul><li>Three React pages</li><li>Three FastAPI APIs</li><li>Browser calls APIM only</li><li>Happy + important negative paths</li></ul></article>
+        <article class="card"><h3>Operations</h3><ul><li>Cache/queue/TTL evidence</li><li>Correlated logs</li><li>TLS chain inspected</li><li>Failure and rollback drills</li></ul></article>
+        <article class="card"><h3>Delivery + cost</h3><ul><li>Protected CI passes</li><li>OIDC + immutable revision</li><li>Actual cost recorded</li><li>Redis and final RG deleted</li></ul></article>
+      </div>
+      <p class="callout"><strong>Next:</strong> use the <a href="GENAI_DEPLOYMENT_GUIDE.html">app-by-app Build &amp; Deployment Guide</a>. Execute App 1 completely, then App 2, then App 3. The <a href="GENAI_SOLUTION_OVERVIEW.md">Markdown source</a> contains the full architectural rationale and acceptance criteria.</p>
+    </section>
+  </main>
+  <footer>Document 1 · Three GenAI Applications · Update with the Markdown source whenever architecture changes.</footer>
+</body>
+</html>

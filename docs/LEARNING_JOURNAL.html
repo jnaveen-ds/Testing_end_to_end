@@ -237,7 +237,7 @@
     <div class="hero-inner">
       <p class="eyebrow">Accelerated 16-hour deployment sprint</p>
       <h1>Azure GenAI + DevOps<br>Learning Journey</h1>
-      <p class="hero-copy">One small application. Many deployment paths. Every service learned manually first, automated second, and destroyed safely.</p>
+      <p class="hero-copy">Three small applications. Three production GenAI patterns. Every service learned manually first, automated second, and destroyed safely.</p>
       <div class="hero-meta">
         <span class="pill">Two-day GenAI sprint</span>
         <span class="pill">Credit · ₹19,109.25</span>
@@ -271,8 +271,8 @@
       </div>
       <div class="section-head" style="margin-top: 2.2rem">
         <p class="eyebrow" style="color: var(--azure)">Active objective</p>
-        <h2 id="overview-title">Deploy a small app through a real GenAI platform path</h2>
-        <p>Keep FastAPI simple and concentrate learning on model deployment, RAG, identity, containers, gateway policy, telemetry, CI/CD, rollback, and verified destruction.</p>
+        <h2 id="overview-title">Deploy three small apps through real GenAI platform paths</h2>
+        <p>Keep application logic simple and concentrate learning on synchronous inference, RAG, asynchronous jobs, identity, delivery, gateway policy, telemetry, recovery, and verified destruction.</p>
       </div>
     </section>
 
@@ -281,13 +281,43 @@
       <div class="callout warning"><strong>September 28 is contingency, not a working day.</strong> The free offer ends after its 30-day validity period. Do not leave teardown until the displayed expiry date.</div>
       <article class="panel">
         <h3>Request, data, identity, and delivery flow</h3>
-        <pre><code>Client → API Management → Container Apps / FastAPI → Microsoft Foundry model
-                                  │                └→ Azure AI Search → Blob documents
-GitHub OIDC → ACR → revision ─────┤
-Managed identity + RBAC ──────────┤
-Key Vault ────────────────────────┤
-Application Insights + Logs ◀─────┘</code></pre>
+        <pre><code>Client → shared React SPA → API Management
+                        ├→ App 1 FastAPI / Container Apps → Managed Redis → Foundry
+                        ├→ App 2 FastAPI / Container Apps → AI Search → Blob
+                        └→ App 3 FastAPI → Durable Functions waits for approval/TTL
+                                              └→ Service Bus → agent worker → Cosmos DB
+
+GitHub OIDC → ACR/revisions · Managed identity + RBAC · Shared App Insights/Logs</code></pre>
+        <div class="callout"><strong>Simple application rule:</strong> all three scenarios use React pages and FastAPI public APIs. The shared SPA reuses its layout, API client, status display, and styling. Browser code never talks directly to Redis, Search, Durable Functions, Service Bus, or Cosmos DB.</div>
       </article>
+
+      <div class="section-head" style="margin-top: 2rem"><h2>The three applications</h2><p>One shared platform avoids repeating setup while each app teaches a different production behavior.</p></div>
+      <article class="panel">
+        <table>
+          <thead><tr><th>Application</th><th>Contract</th><th>Deployment lesson</th><th>AWS comparison</th></tr></thead>
+          <tbody>
+            <tr><td><strong>1 · Chat</strong><br><small>Fargate-equivalent exercise</small></td><td>React form → FastAPI <code>POST /chat</code>; cache MISS→HIT</td><td>Container Apps, Redis, ACR, Foundry, APIM, revisions, autoscaling, scale-to-zero</td><td>Bedrock + ElastiCache + ECR + ECS/Fargate + API Gateway</td></tr>
+            <tr><td><strong>2 · Document Q&amp;A</strong></td><td>React upload/question page → FastAPI → cited answer</td><td>Blob ingestion, AI Search, embeddings, grounding, Content Safety</td><td>S3 + OpenSearch/Textract + Bedrock Guardrails</td></tr>
+            <tr><td><strong>3 · Approval-gated agent</strong></td><td>React run page → FastAPI → plan → approve/reject/expire → result</td><td>Durable Functions, Service Bus, retries/dead letter, TTLs, Cosmos DB audit/status</td><td>Step Functions + Lambda + SQS + DynamoDB</td></tr>
+          </tbody>
+        </table>
+        <div class="callout"><strong>Completion standard:</strong> deploy, call, observe, deliberately break, recover, redeploy, capture evidence, and destroy each app. Repeat App 1 once from your own saved commands.</div>
+      </article>
+
+      <div class="two-col">
+        <article class="panel"><h3>Why Container Apps matches Fargate</h3><p>ECS schedules containers and Fargate supplies serverless compute. Azure Container Apps presents managed compute plus HTTPS ingress, revisions, KEDA autoscaling, logs, and scale-to-zero as one platform—without managing Kubernetes nodes.</p><p>App 1 explicitly practices image → service → revision → autoscaling → scale-to-zero → rollback.</p></article>
+        <article class="panel"><h3>Related Azure options</h3><ul><li><strong>Azure Container Instances:</strong> best for directly running a simple container, but lacks the richer API lifecycle we need.</li><li><strong>Container Apps Jobs:</strong> best for one-off, scheduled, or event-driven Fargate-style tasks.</li><li><strong>AKS:</strong> managed Kubernetes; powerful, but you manage more orchestration and it is outside this sprint.</li></ul></article>
+      </div>
+
+      <div class="section-head" style="margin-top: 2rem"><h2>Users, queues, cache, approval, and TLS</h2><p>Each mechanism solves a different production problem; none is added merely to increase the service count.</p></div>
+      <div class="two-col">
+        <article class="panel"><h3>Concurrent users + Redis</h3><p>Container Apps replicas handle short concurrent requests. Service Bus buffers long approved jobs and caps model/tool concurrency.</p><p>App 1 uses cache-aside: normalized input + tenant scope + model + prompt version + parameters → SHA-256 key. A safe cache hit saves tokens; a miss computes once. TTL controls freshness and a distributed lock prevents a cache stampede.</p><div class="callout warning">Azure Managed Redis is paid and short-lived. Legacy Azure Cache for Redis cannot be created by new public-cloud customers after April 1, 2026. Use local Redis if the portal estimate threatens the cap.</div></article>
+        <article class="panel"><h3>Human-in-the-loop agent</h3><p>FastAPI returns <code>202</code> plus a run ID. Durable Functions checkpoints the plan and waits for an external approval event without holding a request or worker.</p><p>Approve continues to Service Bus. Reject or a 10-minute durable timeout stops execution. The decision records actor, time, and immutable plan hash; duplicate decisions are idempotent.</p></article>
+      </div>
+      <div class="two-col">
+        <article class="panel"><h3>Four lifetime controls</h3><ol><li><strong>Redis TTL:</strong> cache freshness</li><li><strong>Service Bus TTL:</strong> queued-message expiry/dead letter</li><li><strong>Approval TTL:</strong> durable workflow deadline</li><li><strong>Cosmos item TTL:</strong> old lab record cleanup</li></ol><p>Worker execution uses a separate deadline and queue-lock renewal; message TTL does not terminate running code.</p></article>
+        <article class="panel"><h3>Real HTTPS, no domain purchase</h3><p>Container Apps and APIM generated hostnames have trusted Microsoft-managed certificates. We inspect the chain/expiry, enforce HTTPS, and keep the APIM backend connection encrypted.</p><p>Certificates belong at ingress—not in the FastAPI image. Custom-domain DNS and managed certificates are optional only when a domain is already owned.</p></article>
+      </div>
 
       <div class="section-head" style="margin-top: 2rem"><h2>Why these services</h2><p>Each component owns one real GenAI production concern; unrelated infrastructure is deliberately excluded.</p></div>
       <article class="panel">
@@ -302,17 +332,19 @@ Application Insights + Logs ◀─────┘</code></pre>
             <tr><td>AI safety</td><td>Content Safety F0</td><td>Prompt shields and moderation with a hard-stopping free tier.</td></tr>
             <tr><td>Operations</td><td>Application Insights, Log Analytics, Monitor</td><td>Requests, latency, failures, logs, and alerts.</td></tr>
             <tr><td>Delivery</td><td>GitHub Actions OIDC</td><td>Build and deploy immutable revisions without a client secret.</td></tr>
+            <tr><td>Cache</td><td>Azure Managed Redis</td><td>Token-saving cache-aside, TTL, and stampede protection; paid and short-lived.</td></tr>
+            <tr><td>Approval-gated agent</td><td>FastAPI + Durable Functions + Service Bus + Cosmos DB</td><td>Checkpointed human approval, durable timeout, load leveling, retry/dead-letter, idempotency, and audit/status.</td></tr>
           </tbody>
         </table>
       </article>
 
       <div class="two-col">
-        <article class="panel"><h3>Day A · model to HTTPS API</h3><ol><li>Credit, budget, quota, providers</li><li>Architecture and tagged resource group</li><li>Foundry resource and project</li><li>Small chat-model deployment</li><li>Minimal FastAPI <code>/health</code> and <code>/chat</code></li><li>ACR build and push</li><li>Container Apps + telemetry</li><li>Managed identity, RBAC, Key Vault</li></ol></article>
-        <article class="panel"><h3>Day B · RAG to teardown</h3><ol><li>Blob grounding documents</li><li>AI Search index and lexical retrieval</li><li>Embeddings and vector RAG</li><li>APIM OpenAPI and rate limit</li><li>Safety and mini evaluation</li><li>GitHub OIDC revision deploy</li><li>Logs, load test, alert, rollback</li><li>Evidence, cost, deletion proof</li></ol></article>
+        <article class="panel"><h3>Day A · shared platform, chat, RAG</h3><ol><li>Credit, budget, quota, providers</li><li>React + three FastAPI contracts; shared cloud services</li><li>App 1 API, React Chat page, Container Apps</li><li>Redis MISS→HIT, identity, APIM, TLS</li><li>Concurrency, stampede, restore, rollback</li><li>Repeat App 1 from saved commands</li><li>Blob, AI Search, Content Safety</li><li>App 2 API + React page, grounded/unknown answers</li></ol></article>
+        <article class="panel"><h3>Day B · agent, automation, teardown</h3><ol><li>Durable Functions, Service Bus, Cosmos TTL</li><li>App 3 FastAPI + React Agent page</li><li>Approve, reject, timeout, burst queue</li><li>Duplicate approval, expiry, retry, dead letter</li><li>Three APIM routes, HTTPS, rate limits</li><li>GitHub OIDC immutable deploys</li><li>Cross-app logs and repeat exercise</li><li>Evidence, cost, deletion proof</li></ol></article>
       </div>
 
       <div class="two-col">
-        <article class="panel"><h3>Cost guardrails</h3><ul><li>Expected under ₹500; hard stop at ₹1,500.</li><li>AI Search Free: 50 MB, 10,000 documents, 3 indexes.</li><li>ACR Standard 12-month grant, Storage Hot LRS grant, APIM Consumption, scale-to-zero compute.</li><li>No AKS, VM, database, GPU, premium gateway, private endpoint, or provisioned model throughput.</li></ul></article>
+        <article class="panel"><h3>Cost guardrails</h3><ul><li>Expected under ₹500; hard stop at ₹1,500.</li><li>AI Search and Static Web Apps Free; ACR/Storage/Service Bus grants; APIM and Functions Consumption; Container Apps scale-to-zero; eligible Cosmos free tier.</li><li>Azure Managed Redis is paid: smallest dev/test configuration for one block only, after checking its estimate. Local Redis is the fallback.</li><li>No AKS, VM, GPU, premium gateway, private endpoint, or provisioned model throughput.</li></ul></article>
         <article class="panel"><h3>What happens after expiry</h3><p>Pay-As-You-Go is an explicit upgrade, not automatic. Without it, the trial subscription is disabled. If upgraded, 12-month grants still run from the original signup date and always-free grants retain service-specific limits.</p><div class="callout warning">Budgets alert; they do not stop spend. Model tokens, ACR, AI Search Basic, Key Vault operations, storage, egress, and excess telemetry can bill. No upgrade is required or authorized for this sprint.</div></article>
       </div>
 
@@ -323,19 +355,23 @@ Application Insights + Logs ◀─────┘</code></pre>
           <tbody>
             <tr><td>Azure AI Search</td><td>Always</td><td>50 MB, 10,000 documents, 3 indexes</td><td>Core RAG</td></tr>
             <tr><td>Container Apps Consumption</td><td>Always</td><td>180,000 vCPU-s, 360,000 GiB-s, 2M requests/month</td><td>Core hosting</td></tr>
+            <tr><td>Static Web Apps Free</td><td>Free tier</td><td>Hosting quota shown by selected plan</td><td>Core shared React SPA</td></tr>
             <tr><td>API Management Consumption</td><td>Monthly included</td><td>First 1M API operations/subscription/month</td><td>Core gateway</td></tr>
             <tr><td>Content Safety F0</td><td>Free tier</td><td>5,000 text records + 5,000 images/month; hard stop</td><td>Core safety</td></tr>
             <tr><td>Container Registry Standard</td><td>12 months</td><td>One registry, 100 GB, 10 webhooks</td><td>Core registry</td></tr>
             <tr><td>Blob Storage Hot LRS</td><td>12 months</td><td>5 GB, 20,000 reads, 10,000 writes</td><td>Core grounding data</td></tr>
             <tr><td>Key Vault Standard</td><td>12 months</td><td>10,000 RSA-2048 key/secret operations</td><td>Core security</td></tr>
             <tr><td>Document Intelligence S0</td><td>12 months</td><td>500 pages</td><td>Stretch PDF extraction</td></tr>
-            <tr><td>Functions + Event Grid</td><td>Monthly / Always</td><td>1M executions + 400,000 GB-s; 100,000 events</td><td>Stretch ingestion</td></tr>
+            <tr><td>Functions Consumption</td><td>Monthly included</td><td>1M executions + 400,000 GB-s</td><td>Core async hosting</td></tr>
+            <tr><td>Service Bus Standard</td><td>12 months</td><td>750 hours + 13M operations</td><td>Core async queue</td></tr>
+            <tr><td>Cosmos DB free tier</td><td>Always</td><td>1,000 RU/s + 25 GB when free tier is selected</td><td>Core job status; Table Storage fallback</td></tr>
+            <tr><td>Azure Managed Redis</td><td>Paid</td><td>No verified free-account allowance; hourly SKU charge</td><td>One cache block if estimate fits; local fallback</td></tr>
             <tr><td>Foundry/OpenAI inference</td><td>Paid</td><td>No general free-token grant</td><td>Core; strict token limits</td></tr>
             <tr><td>Azure Monitor logs</td><td>Paid ingestion</td><td>Platform metrics/activity logs have free units; log ingestion bills</td><td>Core; sample and cap</td></tr>
           </tbody>
         </table>
       </article>
-      <div class="callout"><strong>Verify before creating:</strong> open <strong>Cost Management + Billing → Free services</strong>. That subscription-specific grid overrides the public marketing list. Cosmos DB, PostgreSQL, Service Bus, and eligible VMs also have useful grants, but they are intentionally excluded because this stateless two-day GenAI API does not need them.</div>
+      <div class="callout"><strong>Verify before creating:</strong> open <strong>Cost Management + Billing → Free services</strong>. That subscription-specific grid overrides the public marketing list. PostgreSQL and eligible VMs remain excluded because none of these three apps needs them.</div>
     </section>
 
     <section id="day2" aria-labelledby="day2-title">
@@ -616,7 +652,7 @@ docker compose ps</code></pre><p>The second command must show no running project
 
   <footer>
     <div class="footer-inner">
-      <p><strong>Source of truth:</strong> <a href="LEARNING_JOURNAL.md">LEARNING_JOURNAL.md</a></p>
+      <p><strong>Documentation order:</strong> <a href="GENAI_SOLUTION_OVERVIEW.html">1 · Problem statements and architecture</a> → <a href="GENAI_DEPLOYMENT_GUIDE.html">2 · App-by-app build and deployment</a> → <a href="LEARNING_JOURNAL.md">3 · Actual learning journal</a>.</p>
       <p><strong>Synchronization rule:</strong> every confirmed step must update the Markdown and HTML together. Never include secrets.</p>
     </div>
   </footer>

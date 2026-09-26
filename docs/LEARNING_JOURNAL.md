@@ -3,6 +3,12 @@
 This is the day-by-day record of the work actually performed. It complements:
 
 - [LEARNING_JOURNAL.html](LEARNING_JOURNAL.html): responsive visual/infographic view
+- [GENAI_SOLUTION_OVERVIEW.md](GENAI_SOLUTION_OVERVIEW.md) and
+  [visual overview](GENAI_SOLUTION_OVERVIEW.html): three problem statements, architecture,
+  service/deployment tradeoffs, cost, latency, and security
+- [GENAI_DEPLOYMENT_GUIDE.md](GENAI_DEPLOYMENT_GUIDE.md) and
+  [visual guide](GENAI_DEPLOYMENT_GUIDE.html): app-by-app build, Azure enablement,
+  portal/CLI, CI/CD, verification, and destruction
 - [LEARNING_PLAN.md](LEARNING_PLAN.md): schedule, goals, and budget
 - [DAILY_PLAYBOOK.md](DAILY_PLAYBOOK.md): planned portal and CLI instructions
 - [Learning_Tracker.xlsx](Learning_Tracker.xlsx): progress and cost tracker
@@ -32,21 +38,78 @@ therefore **8:00 PM IST on September 27**, with September 28 reserved only for
 contingency.
 
 The learner can contribute about 16 hours across two days. The old broad schedule is
-paused in favor of one coherent production-shaped GenAI path:
+paused in favor of three small applications on one shared production-shaped platform:
 
 ```text
-Client → APIM → Container Apps / FastAPI → Foundry model
-                         │              └→ AI Search → Blob documents
-GitHub OIDC → ACR ───────┤
-Managed identity + RBAC ─┤
-Key Vault ───────────────┤
-App Insights + Logs ◀────┘
+Client → shared React SPA → APIM
+              ├→ Chat FastAPI / Container Apps → Managed Redis → Foundry
+              ├→ RAG FastAPI / Container Apps → AI Search → Blob
+              └→ Agent FastAPI → Durable Functions waits for approval/TTL
+                             └→ Service Bus → agent Function → Cosmos DB
+GitHub OIDC → ACR/revisions; managed identity + RBAC; shared App Insights/Logs
 ```
 
-The application stays intentionally small: synchronous `/health` and `/chat` endpoints,
-then one grounded RAG path. The learning focus is model deployment, retrieval, identity,
-container delivery, gateway policy, observability, revisions, and teardown—not frontend,
-database, worker, VM, or Kubernetes complexity.
+Every scenario uses React for the user experience and FastAPI for its public backend.
+One shared React SPA keeps the exercise small: it has Chat, Document Q&A, and Agent
+Approval pages and reuses the layout, API client, status display, and styling. Each page
+calls a separate small FastAPI API through APIM. Browser code never calls Redis, Search,
+Durable Functions, Service Bus, or Cosmos DB directly.
+
+App 1 is a synchronous `/health` and `/chat` API deployed as the Azure equivalent of an
+ECS Fargate service. App 2 is a grounded document Q&A API with citations and an
+unknown-answer case. App 3 is a long-running agent that returns a run ID, proposes a
+plan, waits durably for human approval, and only then queues execution and exposes
+persisted status/results. The
+three deployment styles cover real-time model serving, RAG, and event-driven inference
+without adding frontend, VM, or Kubernetes complexity. They share Foundry, registry,
+gateway, identity, and monitoring resources so the learner spends time on the differences.
+
+For App 1, Azure Container Apps is the best practical Fargate equivalent: ECS schedules
+containers and Fargate provides serverless compute, while Container Apps combines
+managed serverless compute with HTTPS ingress, revisions, KEDA autoscaling, logs,
+scale-to-zero, and rollback. Azure Container Instances is closer to running a raw
+container directly, and Container Apps Jobs is closer to one-off Fargate tasks. Neither
+is as suitable as a Container App for this long-running HTTP API exercise.
+
+Multiple concurrent users are handled first by Container Apps replicas, per-replica
+concurrency, and autoscaling. A queue is not required for every HTTP call. App 3 uses
+Service Bus to absorb bursts of approved long-running work, cap model/tool concurrency,
+retry transient failures, and isolate expired or repeatedly failing jobs.
+
+App 1 uses Azure Managed Redis as a cache-aside layer. The key includes normalized
+input, tenant/auth scope, model deployment, prompt version, and generation parameters.
+A hit saves a model call and tokens; a miss computes once and stores only a successful,
+safe result with a short TTL. A distributed lock prevents a cache stampede. Personalized
+data is never shared across tenants and Redis is not the durable system of record.
+
+Azure Cache for Redis Basic/Standard/Premium is retiring, and creation for new
+public-cloud customers has been blocked since April 1, 2026. The lab uses Azure Managed
+Redis with TLS 1.2/1.3 only if its smallest dev/test portal estimate fits the cap. It is
+paid and deleted after the block; local open-source Redis is the fallback.
+
+App 3's FastAPI API uses Durable Functions internally rather than holding an HTTP request
+or process while a human decides. `POST /runs` returns `202`, a run ID, and a status URL.
+The React page displays `planning → awaiting approval → queued → running → completed`,
+plus rejected and expired outcomes. The orchestrator saves
+the proposed plan and waits for an external approval event while racing a 10-minute
+durable timer. Approval continues to Service Bus; rejection or timeout terminates without
+executing the action. Approval stores actor, timestamp, decision, and immutable plan hash,
+and duplicate decisions are idempotent.
+
+The sprint tests four separate lifetime controls: Redis cache TTL, Service Bus message
+TTL/dead lettering, Durable Functions approval TTL, and Cosmos DB item TTL for old lab
+records. Worker execution has its own deadline and queue-lock renewal; message TTL is not
+misused to terminate already-running code. Work is checkpointed into idempotent steps.
+
+Public SSL/TLS needs no purchased domain. Container Apps and APIM generated hostnames use
+Microsoft-managed trusted certificates. We inspect the chain and expiry, verify HTTPS-only
+behavior, and keep APIM-to-backend traffic on HTTPS. A custom-domain managed certificate
+is optional only when the learner already controls the DNS domain.
+
+Each app follows the same learning loop: manual deployment, successful request, logs,
+deliberate failure, recovery, immutable redeployment, evidence, and destruction. The
+learner repeats App 1 from their own saved commands; repetition is part of completion,
+not a fourth architecture.
 
 ### Sprint cost and safety decision
 
@@ -55,8 +118,14 @@ database, worker, VM, or Kubernetes complexity.
 - Use a pay-as-you-go chat model with low token limits, not provisioned throughput.
 - Use AI Search Free for the small RAG corpus.
 - Use the eligible ACR Standard 12-month grant, Container Apps scale-to-zero, Storage
-  Standard LRS, and APIM Consumption.
-- Skip VM, AKS, managed databases, premium networking, and private endpoints.
+  Standard LRS, APIM Consumption, Functions Consumption, one Service Bus queue, and an
+  eligible Cosmos DB free-tier account.
+- Azure Managed Redis is paid and short-lived; review its estimate before creation and
+  use local Redis if it threatens the cap.
+- If Cosmos free tier is unavailable, use Table Storage for App 3 job state. If Service
+  Bus Standard is not eligible, keep it only for the async block and delete immediately.
+- Skip VM, AKS, managed PostgreSQL, legacy Azure Cache for Redis, premium networking,
+  and private endpoints.
 - All planned charges are Azure-credit eligible. No outside-credit purchase or account
   upgrade is required or authorized.
 
@@ -85,6 +154,7 @@ the subscription-specific grid at **Cost Management + Billing → Free services*
 |---|---|---|---|
 | Azure AI Search | Always | 50 MB, 10,000 documents, 3 indexes | Core RAG |
 | Container Apps | Always | 180,000 vCPU-s, 360,000 GiB-s, 2 million requests/month | Core hosting |
+| Static Web Apps Free | Free tier | Hosting quota shown by the selected plan | Core shared React SPA |
 | API Management Consumption | Monthly included | First 1 million API operations/month | Core gateway |
 | Content Safety F0 | Free tier | 5,000 text records + 5,000 images/month; stops at limit | Core safety |
 | ACR Standard | 12 months | One registry, 100 GB, 10 webhooks | Core image registry |
@@ -92,28 +162,37 @@ the subscription-specific grid at **Cost Management + Billing → Free services*
 | Key Vault Standard | 12 months | 10,000 RSA-2048 key/secret operations | Core secret governance |
 | Document Intelligence S0 | 12 months | 500 pages | Stretch PDF extraction |
 | Azure Language | Always | 5,000 text records | Stretch NLP comparison |
-| Functions Consumption | Monthly included | 1 million executions + 400,000 GB-s | Stretch ingestion worker |
+| Functions Consumption | Monthly included | 1 million executions + 400,000 GB-s | Core durable workflow/worker |
 | Event Grid | Always | 100,000 operations/month | Stretch Blob trigger |
+| Azure Managed Redis | **Paid** | No verified free-account allowance; hourly SKU charge | Core cache exercise only if portal estimate fits |
+| Service Bus Standard | 12 months | 750 hours + 13 million operations | Core agent queue |
+| Cosmos DB free tier | Always | 1,000 RU/s + 25 GB when selected | Core status/audit with item TTL |
 | Foundry platform | Platform free | Individual consumed features bill normally | Core project/model governance |
 | Foundry/OpenAI inference | **Not generally free** | Token/model-specific pay-as-you-go | Core; use remaining credit with strict limits |
 | Azure Monitor logs | **Ingestion metered** | Platform metrics/activity logs have free units | Core but sampled, tiny volume |
 
-Useful free services deliberately excluded from the two-day core include Cosmos DB
-(1,000 RU/s + 25 GB free-tier account), PostgreSQL Flexible (750 B1ms hours + 32 GB data
-and backup for 12 months), Service Bus Standard (750 hours + 13 million operations for
-12 months), and eligible VMs (750 hours for listed SKUs for 12 months). They solve real
-problems, but this stateless GenAI API does not need them.
+Cosmos DB (1,000 RU/s + 25 GB when the one free-tier account option is available),
+Service Bus Standard (750 hours + 13 million operations for 12 months), and Functions
+Consumption are now used by the async application. PostgreSQL Flexible and eligible VMs
+remain excluded because none of the three applications needs them.
 
 ### Two-day completion outcome
 
-- [ ] Foundry chat model is deployed and exercised in the playground
-- [ ] Minimal FastAPI container reaches `/health` and real `/chat` on Container Apps
-- [ ] Managed identity calls the model without a stored model API key
-- [ ] Blob documents are indexed and a RAG answer is grounded through AI Search
-- [ ] APIM exposes the OpenAPI contract and enforces a small rate limit
-- [ ] Application Insights/Logs show requests, latency, and a deliberate failure
-- [ ] GitHub OIDC publishes and deploys an immutable revision
-- [ ] A previous Container Apps revision is restored successfully
+- [ ] Shared Foundry chat/embedding deployments, ACR, identity, Key Vault, and monitoring exist
+- [ ] Shared React SPA exposes working Chat, Document Q&A, and Agent Approval pages
+- [ ] Each page calls a FastAPI backend through APIM; browser code has no direct data/service credentials
+- [ ] App 1 reaches `/health` and real `/chat` through APIM, proves cache MISS→HIT token savings, scales to zero, and creates a new revision
+- [ ] Concurrent duplicate requests prove autoscaling and cache-stampede protection
+- [ ] App 1 is deliberately broken/recovered, rolled back, and independently redeployed once
+- [ ] App 2 returns a cited grounded answer and correctly handles an unknown answer
+- [ ] App 3 returns `202`, persists a plan, and exercises approve, reject, timeout, and duplicate-approval paths
+- [ ] Approved work moves through Service Bus; burst depth, concurrency, retry, message expiry/dead letter, repair/replay, and idempotency are observed
+- [ ] Redis, Service Bus, approval, and Cosmos item TTLs are independently verified
+- [ ] Managed identities call Azure services without stored Azure service keys
+- [ ] APIM exposes all three contracts and enforces a small rate limit
+- [ ] Public certificate chain/expiry, HTTPS-only behavior, and APIM-to-backend HTTPS are verified
+- [ ] Application Insights/Logs show requests, latency, queue behavior, and deliberate failures
+- [ ] GitHub OIDC publishes/deploys immutable versions without an Azure client secret
 - [ ] Evidence and actual cost are recorded
 - [ ] Sprint resource group is deleted and absence is verified before the deadline
 

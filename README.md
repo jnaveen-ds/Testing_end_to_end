@@ -3,7 +3,7 @@
 A deliberately small GenAI application (feedback analyzer) used to learn a complete,
 production-style engineering lifecycle end to end — with **$0 default cloud cost**.
 
-**Docs:** [LEARNING_PLAN.md](docs/LEARNING_PLAN.md) — 28-day plan to Sep 27 · [DAILY_PLAYBOOK.md](docs/DAILY_PLAYBOOK.md) — per-day services, portal steps, CLI commands, destroy ritual · [LEARNING_JOURNAL.md](docs/LEARNING_JOURNAL.md) — detailed source of truth · [visual learning journal](docs/LEARNING_JOURNAL.html) — responsive infographic · [RUNBOOK.md](docs/RUNBOOK.md) — running & verifying · [ARCHITECTURE.md](docs/ARCHITECTURE.md) — design · [INTERVIEW_NOTES.md](docs/INTERVIEW_NOTES.md) — decisions
+**Docs:** [GenAI solution overview](docs/GENAI_SOLUTION_OVERVIEW.md) / [visual](docs/GENAI_SOLUTION_OVERVIEW.html) — three problem statements, architecture, and tradeoffs · [app-by-app deployment guide](docs/GENAI_DEPLOYMENT_GUIDE.md) / [visual](docs/GENAI_DEPLOYMENT_GUIDE.html) — concepts through destruction · [LEARNING_PLAN.md](docs/LEARNING_PLAN.md) — schedule and budget · [DAILY_PLAYBOOK.md](docs/DAILY_PLAYBOOK.md) — portal/CLI/destroy ritual · [LEARNING_JOURNAL.md](docs/LEARNING_JOURNAL.md) / [visual](docs/LEARNING_JOURNAL.html) — actual learning record · [RUNBOOK.md](docs/RUNBOOK.md) — running and verification · [ARCHITECTURE.md](docs/ARCHITECTURE.md) — current implemented design · [INTERVIEW_NOTES.md](docs/INTERVIEW_NOTES.md) — decisions
 
 ## Architecture
 
