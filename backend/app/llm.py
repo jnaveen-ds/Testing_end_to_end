@@ -35,8 +35,17 @@ class AnalysisResult:
     latency_ms: int
 
 
+@dataclass
+class ChatResult:
+    answer: str
+    prompt_tokens: int
+    completion_tokens: int
+    latency_ms: int
+
+
 class LLMProvider(Protocol):
     def analyze(self, text: str) -> AnalysisResult: ...
+    def chat(self, prompt: str) -> ChatResult: ...
 
 
 class FakeLLMProvider:
@@ -79,23 +88,65 @@ class FakeLLMProvider:
             latency_ms=latency_ms,
         )
 
+    def chat(self, prompt: str) -> ChatResult:
+        """Return a stable local response so development and CI never spend tokens."""
+        started = time.perf_counter()
+        cleaned = " ".join(prompt.split())
+        answer = f"Local fake-model response: {cleaned}"
+        return ChatResult(
+            answer=answer,
+            prompt_tokens=max(1, len(cleaned) // 4),
+            completion_tokens=max(1, len(answer) // 4),
+            latency_ms=int((time.perf_counter() - started) * 1000),
+        )
+
 
 class AzureOpenAIProvider:
-    """Real Azure OpenAI calls. Requires LLM_PROVIDER=azure plus endpoint/key env vars."""
+    """Real Azure OpenAI calls authenticated by API key or managed identity."""
 
     def __init__(self, settings: Settings):
-        if not settings.azure_openai_endpoint or not settings.azure_openai_api_key:
+        if not settings.azure_openai_endpoint:
             raise RuntimeError(
-                "Azure OpenAI is not configured: set AZURE_OPENAI_ENDPOINT and "
-                "AZURE_OPENAI_API_KEY (never commit them; use .env or Key Vault)."
+                "Azure OpenAI is not configured: set AZURE_OPENAI_ENDPOINT."
             )
         from openai import AzureOpenAI  # imported lazily so CI/dev never needs it
 
-        self._client = AzureOpenAI(
-            azure_endpoint=settings.azure_openai_endpoint,
-            api_key=settings.azure_openai_api_key,
-            api_version=settings.azure_openai_api_version,
-        )
+        client_options = {
+            "azure_endpoint": settings.azure_openai_endpoint,
+            "api_version": settings.azure_openai_api_version,
+        }
+        if settings.azure_openai_auth == "api_key":
+            if not settings.azure_openai_api_key:
+                raise RuntimeError(
+                    "AZURE_OPENAI_AUTH=api_key requires AZURE_OPENAI_API_KEY. "
+                    "Never commit it; use a local .env or Key Vault."
+                )
+            client_options["api_key"] = settings.azure_openai_api_key
+        elif settings.azure_openai_auth == "managed_identity":
+            from azure.identity import (
+                DefaultAzureCredential,
+                ManagedIdentityCredential,
+                get_bearer_token_provider,
+            )
+
+            credential = (
+                ManagedIdentityCredential(
+                    client_id=settings.azure_managed_identity_client_id
+                )
+                if settings.azure_managed_identity_client_id
+                else DefaultAzureCredential()
+            )
+            client_options["azure_ad_token_provider"] = get_bearer_token_provider(
+                credential,
+                "https://cognitiveservices.azure.com/.default",
+            )
+        else:
+            raise RuntimeError(
+                "AZURE_OPENAI_AUTH must be 'api_key' or 'managed_identity', got "
+                f"{settings.azure_openai_auth!r}"
+            )
+
+        self._client = AzureOpenAI(**client_options)
         self._deployment = settings.azure_openai_deployment
 
     def analyze(self, text: str) -> AnalysisResult:
@@ -120,6 +171,29 @@ class AzureOpenAIProvider:
             summary=str(content.get("summary", ""))[:500],
             sentiment=str(content.get("sentiment", "neutral")),
             themes=[str(t) for t in content.get("themes", [])][:3],
+            prompt_tokens=response.usage.prompt_tokens,
+            completion_tokens=response.usage.completion_tokens,
+            latency_ms=int((time.perf_counter() - started) * 1000),
+        )
+
+    def chat(self, prompt: str) -> ChatResult:
+        started = time.perf_counter()
+        response = self._client.chat.completions.create(
+            model=self._deployment,
+            messages=[
+                {
+                    "role": "system",
+                    "content": (
+                        "You are a concise learning assistant. Answer the user's question "
+                        "directly and do not claim to have performed actions you did not perform."
+                    ),
+                },
+                {"role": "user", "content": prompt},
+            ],
+            temperature=0,
+        )
+        return ChatResult(
+            answer=response.choices[0].message.content or "",
             prompt_tokens=response.usage.prompt_tokens,
             completion_tokens=response.usage.completion_tokens,
             latency_ms=int((time.perf_counter() - started) * 1000),

@@ -153,6 +153,15 @@ SPRINT_BLOCKS = [
     (16, "Day B", "Evidence, actual cost, delete and prove absence", "Cost Management, Resource Group", "₹0"),
 ]
 
+SPRINT_PROGRESS = {
+    2: (
+        "In progress",
+        "Local App 1 React/FastAPI contract implemented: MISS→HIT, zero hit tokens, TTL, "
+        "scoped keys, and 20-request stampede test verified. Shared Azure platform pending.",
+        "-",
+    ),
+}
+
 FREE_QUOTAS = [
     ("AI/RAG", "Azure AI Search", "Always", "50 MB; 10,000 documents; 3 indexes", "Core: Free SKU"),
     ("Hosting", "Container Apps Consumption", "Always", "180,000 vCPU-s; 360,000 GiB-s; 2M requests/month", "Core: scale to zero"),
@@ -263,7 +272,8 @@ def main():
     ws = wb.create_sheet("GenAI Sprint")
     header(ws, ["Block", "Sprint day", "Outcome", "Azure services", "Cost guardrail", "Status", "Evidence", "Destroyed?"])
     for r, (block, sprint_day, outcome, services, cost) in enumerate(SPRINT_BLOCKS, 2):
-        vals = [block, sprint_day, outcome, services, cost, "Not started", "", ""]
+        status, evidence, destroyed = SPRINT_PROGRESS.get(block, ("Not started", "", ""))
+        vals = [block, sprint_day, outcome, services, cost, status, evidence, destroyed]
         for c, v in enumerate(vals, 1):
             cell = ws.cell(row=r, column=c, value=v)
             cell.font = Font(size=10)

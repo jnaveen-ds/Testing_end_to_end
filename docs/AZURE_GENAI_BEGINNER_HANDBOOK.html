@@ -110,10 +110,12 @@ revision, or orchestration. The purpose is not to memorize Azure product names. 
 purpose is to understand a problem well enough to choose a suitable service, predict its
 cost and failure modes, deploy it safely, and explain the decision to another person.</p>
 <blockquote>
-<p><strong>Current delivery status:</strong> this is the teaching and design handbook. The existing
-Feedback Analyzer, local Docker stack, CI checks, and GHCR images are implemented. The
-three new learning applications and their Azure resources are planned but have not yet
-been implemented or deployed. Planned behavior must not be mistaken for completed work.</p>
+<p><strong>Current delivery status:</strong> the existing Feedback Analyzer, local Docker stack, CI
+checks, and GHCR images are implemented. App 1 now has a working React Chat page,
+dedicated FastAPI entry point, fake/Azure provider seam, scoped cache key, TTL cache,
+Redis-compatible distributed lock, managed-identity model authentication path, and
+local tests. Its Azure resources are not yet deployed. Apps 2 and 3 remain planned.
+Local behavior must not be mistaken for a cloud deployment.</p>
 </blockquote>
 <h2 id="1-how-to-read-and-use-this-handbook">1. How to read and use this handbook</h2>
 <p>Read the handbook in this order:</p>
@@ -275,6 +277,11 @@ also receives only the permissions it needs.</p>
 runtimes here because independent scaling, failure isolation, and least-privilege identity
 are exactly the deployment lessons we want to practise.</p>
 <h2 id="4-app-1-real-time-chat-explained-from-click-to-response">4. App 1 — Real-time Chat, explained from click to response</h2>
+<p><strong>Implementation checkpoint:</strong> the local fake-provider version of this flow is now
+implemented in <code>frontend/src/pages/ChatPage.tsx</code>, <code>backend/app/chat_api.py</code>,
+<code>backend/app/chat.py</code>, and <code>backend/app/chat_cache.py</code>. The test suite proves MISS→HIT,
+zero hit tokens, TTL expiry, cache-key boundaries, and one provider call for 20 concurrent
+identical misses. The next checkpoint is manual Azure service creation and deployment.</p>
 <h3 id="41-the-problem-in-ordinary-language">4.1 The problem in ordinary language</h3>
 <p>A user writes a prompt and expects an answer within seconds. During a burst, many users
 may send requests at once. Some may send exactly the same safe question. Calling the LLM

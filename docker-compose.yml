@@ -33,6 +33,9 @@ services:
       DATABASE_URL: postgresql+psycopg2://app:app@db:5432/feedback
       REDIS_URL: redis://redis:6379/0
       LLM_PROVIDER: fake          # flip to "azure" + add the AZURE_* vars to try real calls
+      CHAT_CACHE_BACKEND: redis   # shared cache + lock across API replicas
+      CHAT_CACHE_TTL_SECONDS: 900
+      CHAT_PROMPT_VERSION: v1
       # AZURE_OPENAI_ENDPOINT:
       # AZURE_OPENAI_API_KEY:
       # AZURE_OPENAI_DEPLOYMENT: gpt-5.4-mini

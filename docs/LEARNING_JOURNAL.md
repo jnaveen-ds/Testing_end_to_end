@@ -31,7 +31,75 @@ A day is complete only after its verification and destroy checklist passes.
 | Day | Topic | Status | Planned cost | Actual cost | Cleanup |
 |---|---|---|---:|---:|---|
 | 1 | GitHub governance, GHCR, Azure OIDC, local Compose | **Done** | $0 | **$0** | Containers and volume destroyed |
-| 2 | Accelerated GenAI deployment sprint | **In progress** | <₹1,500 cap | **₹0 so far** | No sprint resource created yet |
+| 2 | Accelerated GenAI deployment sprint | **In progress — App 1 local foundation verified** | <₹1,500 cap | **₹0 so far** | No Azure sprint resource created yet |
+
+## Day 2 checkpoint — App 1 local foundation
+
+**Date:** 2026-09-26
+
+**Azure cost:** ₹0. No App 1 Azure resource has been created.
+
+**Status:** local implementation and verification complete; Azure deployment pending.
+
+We deliberately built and tested the application contract before opening paid cloud
+meters. The shared React frontend now has a Real-time Chat page alongside the existing
+Feedback Analyzer. Its FastAPI path validates the prompt, creates a tenant/model/prompt-
+version-aware SHA-256 cache key, checks a TTL cache, and invokes the configured provider
+only on a miss. Tests use an in-memory implementation; Docker Compose selects Redis so
+multiple API processes can share cached values and a per-key distributed lock.
+
+### Implemented flow
+
+```text
+React Chat page → POST /api/chat → FastAPI validation → scoped cache key
+                                                    ├─ HIT → cached answer, 0 new tokens
+                                                    └─ MISS → per-key lock → recheck
+                                                                        → provider
+                                                                        → cache 15 min
+```
+
+The second check after acquiring the lock matters. If 20 identical requests miss at the
+same time, one request computes while the others wait. When each waiter receives the lock,
+it sees the value written by the first request rather than calling the model again. This
+is the cache-stampede behavior we need before moving to Azure Managed Redis.
+
+### Verification evidence
+
+```text
+cd backend && ../.venv/bin/python -m pytest -v
+18 passed
+
+cd frontend && npx tsc --noEmit && npm run build
+TypeScript passed; Vite production build completed
+
+Live fake-provider request 1: cache_status=MISS, non-zero prompt/completion tokens
+Same request 2:             cache_status=HIT,  zero prompt/completion tokens
+Concurrency test:          20 identical requests, 1 provider call, 1 MISS, 19 HITs
+```
+
+The desktop cache MISS/HIT states and narrow layout were rendered and visually inspected.
+The HIT state clearly showed zero new model tokens and the narrow page had no horizontal
+clipping. This is local fake-provider evidence, not proof of Azure behavior.
+
+### Files and contracts added
+
+- `backend/app/chat_api.py`: dedicated future Container Apps entry point.
+- `backend/app/chat.py`: `/chat`, cache key, and cache-aside flow.
+- `backend/app/chat_cache.py`: in-memory/Redis TTL caches and per-key lock.
+- `backend/app/llm.py`: common synchronous `.chat()` seam; Azure calls can use a local API
+  key or a short-lived managed-identity token in Container Apps, so no model key is
+  required in the cloud environment.
+- `frontend/src/pages/ChatPage.tsx`: prompt, answer, cache, token, latency, and correlation UI.
+- `backend/tests/test_chat.py`: boundaries, TTL, key isolation, MISS/HIT, and stampede tests.
+
+### Next checkpoint and safety gate
+
+Before Azure creation, inspect subscription/region support, model availability/quota, and
+portal estimates. Then create the shared platform manually: tagged resource group, ACR,
+logs/Container Apps environment, managed identity/RBAC, and Foundry deployment. Managed
+Redis is created only after its visible estimate fits the cap; otherwise local Redis remains
+the learning fallback. Nothing is called “deployed” until the public Azure HTTPS path,
+identity, logs, scaling/revision behavior, cost, and cleanup are verified.
 
 ## Schedule change — two-day GenAI deployment sprint
 

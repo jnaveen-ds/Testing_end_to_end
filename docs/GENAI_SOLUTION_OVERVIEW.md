@@ -7,6 +7,13 @@ the problem. Read this before the app-by-app
 
 Visual version: [GENAI_SOLUTION_OVERVIEW.html](GENAI_SOLUTION_OVERVIEW.html).
 
+> **Implementation checkpoint — September 26, 2026:** App 1's local React/FastAPI
+> path is implemented and verified with the deterministic fake provider. It includes a
+> scoped TTL cache, Redis-compatible per-key lock, MISS→HIT token evidence, and a
+> 20-request stampede test. The Azure provider supports API-key authentication locally and
+> managed-identity authentication in Container Apps. App 1 has not yet been deployed to
+> Azure. Apps 2 and 3 remain designs, not implementations.
+
 New to cloud deployment? Start with the plain-language
 [Azure GenAI Deployment Handbook for Beginners](AZURE_GENAI_BEGINNER_HANDBOOK.md),
 available as [visual HTML](AZURE_GENAI_BEGINNER_HANDBOOK.html) and a

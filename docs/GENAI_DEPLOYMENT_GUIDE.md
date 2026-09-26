@@ -23,8 +23,9 @@ flowchart arrow and YES/NO path means; this guide is the practical execution ref
 | Existing Feedback Analyzer React/FastAPI/Celery app | Implemented and locally verified | `frontend/`, `backend/app/`, `docker-compose.yml` |
 | Existing PR checks | Implemented | `.github/workflows/ci.yml` |
 | Existing GHCR image publication | Implemented | `.github/workflows/publish.yml` |
-| Shared three-page React learning SPA | **Planned; not implemented yet** | Will evolve `frontend/src/` |
-| Chat, RAG, and Agent FastAPI entry points | **Planned; not implemented yet** | Will be added under `backend/app/` |
+| Shared three-page React learning SPA | **In progress:** App 1 Chat page implemented; RAG and Agent pages planned | `frontend/src/App.tsx`, `frontend/src/pages/ChatPage.tsx` |
+| Chat FastAPI entry point and cache-aside service | **Implemented and locally verified with fake provider** | `backend/app/chat_api.py`, `backend/app/chat.py`, `backend/app/chat_cache.py` |
+| RAG and Agent FastAPI entry points | **Planned; not implemented yet** | Will be added under `backend/app/` |
 | Azure deployment workflow | **Planned; not implemented yet** | Will be added under `.github/workflows/` |
 | Azure resources | Not created for this sprint yet | Azure Portal/CLI during the guided blocks |
 
@@ -69,14 +70,17 @@ Shared: ACR, managed identities/RBAC, Key Vault, Application Insights, Log Analy
 
 ```text
 frontend/src/
-  App.tsx                   # shared shell and three simple page routes/tabs
-  api.ts                    # one typed client; browser calls APIM only
-  pages/ChatPage.tsx
+  App.tsx                   # implemented shell; App 1 + existing analyzer tabs
+  api.ts                    # implemented typed analysis/chat client
+  pages/ChatPage.tsx        # implemented App 1 prompt/result/cache metrics
+  pages/FeedbackPage.tsx    # existing analyzer moved behind shared shell
   pages/DocumentsPage.tsx
   pages/AgentPage.tsx
 
 backend/app/
-  chat_api.py               # FastAPI /health and /chat
+  chat_api.py               # implemented dedicated FastAPI /health, /ready, /chat
+  chat.py                   # implemented cache key, service, and /chat router
+  chat_cache.py             # implemented memory/Redis TTL cache + per-key lock
   rag_api.py                # FastAPI /health, /documents, /questions
   agent_api.py              # FastAPI /health, /runs, /runs/{id}, approval
   cache.py                  # cache key, TTL, lock, hit/miss metadata
@@ -206,6 +210,19 @@ Never create `AZURE_CLIENT_SECRET`; OIDC exchanges short-lived identity tokens.
 
 Use Cloud Shell Bash on the managed laptop. Choose `LOCATION` only after checking model
 and service availability; not every Foundry model is available in every Azure region.
+Cloud Shell is a separate machine, so clone the public repository there before using
+`git rev-parse` or `az acr build`:
+
+```bash
+cd ~
+git clone https://github.com/jnaveen-ds/Testing_end_to_end.git genai-lab
+cd genai-lab
+git status
+```
+
+On a later Cloud Shell session, use `cd ~/genai-lab && git pull --ff-only` instead of
+cloning again. Deploy only the merged commit that contains App 1; do not build an old
+`main` revision while the code exists only on a pull-request branch.
 
 ```bash
 export SUBSCRIPTION_ID="<select without pasting it into documentation>"
@@ -253,7 +270,8 @@ for provider in \
   Microsoft.App Microsoft.ContainerRegistry Microsoft.CognitiveServices \
   Microsoft.Search Microsoft.Storage Microsoft.KeyVault Microsoft.ApiManagement \
   Microsoft.Insights Microsoft.OperationalInsights Microsoft.Web \
-  Microsoft.ServiceBus Microsoft.DocumentDB Microsoft.Cache; do
+  Microsoft.ServiceBus Microsoft.DocumentDB Microsoft.Cache \
+  Microsoft.ManagedIdentity; do
   az provider register --namespace "$provider"
 done
 
@@ -306,6 +324,15 @@ run is non-terminal; stop timers on unmount; never contain Azure credentials.
 | Chat | first request MISS, second HIT | different prompt version is a MISS; failed call is not cached |
 | Document Q&A | answer cites uploaded source | unknown question refuses to invent |
 | Agent | approve reaches completed | reject, timeout, duplicate approval, changed plan hash |
+
+App 1 local verification completed on September 26, 2026:
+
+- `POST /chat` returned `MISS` with fake-provider tokens, then `HIT` with zero new tokens.
+- 20 concurrent identical cache misses produced exactly one provider call in the test.
+- cache-key tests distinguish tenant and prompt version while normalizing whitespace.
+- TTL expiry, blank/oversized input, and the shared React Chat page were verified.
+- Azure Foundry, ACR, Container Apps, APIM, managed identity, and Managed Redis are **not
+  deployed yet**; local success does not count as cloud completion.
 
 Run before any cloud deployment:
 
@@ -390,9 +417,10 @@ For local/CI tests, use the deterministic fake provider instead.
 
 ```bash
 export ACR="genai${SUFFIX}"
+export IMAGE_TAG="sha-$(git rev-parse --short=12 HEAD)"
 az acr create --resource-group "$RG" --name "$ACR" --sku Standard
 az acr show --name "$ACR" --query '{loginServer:loginServer,sku:sku.name}' -o table
-az acr build --registry "$ACR" --image genai-backend:manual-1 backend
+az acr build --registry "$ACR" --image "genai-backend:$IMAGE_TAG" backend
 az acr repository show-tags --name "$ACR" --repository genai-backend -o table
 ```
 
@@ -420,11 +448,21 @@ These commands become executable after the three entry modules exist:
 
 ```bash
 export LOGIN_SERVER="$(az acr show -n "$ACR" --query loginServer -o tsv)"
-export IMAGE="$LOGIN_SERVER/genai-backend:sha-<commit>"
+export IMAGE="$LOGIN_SERVER/genai-backend:$IMAGE_TAG"
+export ACR_ID="$(az acr show -g "$RG" -n "$ACR" --query id -o tsv)"
+export PULL_IDENTITY="id-genai-pull-${SUFFIX}"
+az identity create -g "$RG" -n "$PULL_IDENTITY" -l "$LOCATION"
+export PULL_ID="$(az identity show -g "$RG" -n "$PULL_IDENTITY" --query id -o tsv)"
+export PULL_PRINCIPAL_ID="$(az identity show -g "$RG" -n "$PULL_IDENTITY" --query principalId -o tsv)"
+az role assignment create --assignee-object-id "$PULL_PRINCIPAL_ID" \
+  --assignee-principal-type ServicePrincipal --scope "$ACR_ID" --role AcrPull
+az acr config authentication-as-arm update -r "$ACR" --status enabled
 
 # Repeat for chat-api, rag-api, and agent-api with the corresponding uvicorn module.
 az containerapp create -g "$RG" -n chat-api --environment "$ENV" \
   --image "$IMAGE" --target-port 8000 --ingress external \
+  --user-assigned "$PULL_ID" --registry-identity "$PULL_ID" \
+  --registry-server "$LOGIN_SERVER" \
   --min-replicas 0 --max-replicas 3 \
   --command uvicorn --args app.chat_api:app --host 0.0.0.0 --port 8000
 ```
@@ -432,15 +470,17 @@ az containerapp create -g "$RG" -n chat-api --environment "$ENV" \
 After creation:
 
 ```bash
-az containerapp identity assign -g "$RG" -n chat-api --system-assigned
 az containerapp show -g "$RG" -n chat-api \
   --query '{fqdn:properties.configuration.ingress.fqdn,revision:properties.latestRevisionName}' -o table
 az containerapp logs show -g "$RG" -n chat-api --follow
 ```
 
-Assign RBAC to the managed identity at the narrowest resource scope. Contributor is for
-infrastructure deployment, not application data access. Exact data-plane roles are added
-only after the target resource exists and are recorded beside the implementation.
+The user-assigned identity exists before the app so ACR pull permission exists before the
+first private-image revision starts. It receives only `AcrPull`, not `AcrPush` or
+Contributor. Assign a separate runtime identity (or additional narrow roles to this lab
+identity) for Foundry data-plane calls, configure `AZURE_OPENAI_AUTH=managed_identity`,
+and set `AZURE_MANAGED_IDENTITY_CLIENT_ID` when a specific user-assigned identity is used.
+Contributor is for infrastructure deployment, not application data access.
 
 ### 8.5 Azure Managed Redis
 

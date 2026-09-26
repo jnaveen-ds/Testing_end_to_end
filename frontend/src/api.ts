@@ -15,6 +15,16 @@ export interface Job {
   error: string | null;
 }
 
+export interface ChatResponse {
+  answer: string;
+  cache_status: "HIT" | "MISS";
+  prompt_tokens: number;
+  completion_tokens: number;
+  model_latency_ms: number;
+  total_latency_ms: number;
+  correlation_id: string;
+}
+
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const res = await fetch(`/api${path}`, {
     headers: { "Content-Type": "application/json" },
@@ -30,4 +40,11 @@ export function createAnalysis(text: string): Promise<Job> {
 
 export function getJob(id: string): Promise<Job> {
   return request<Job>(`/analyses/${id}`);
+}
+
+export function sendChat(prompt: string): Promise<ChatResponse> {
+  return request<ChatResponse>("/chat", {
+    method: "POST",
+    body: JSON.stringify({ prompt }),
+  });
 }

@@ -251,6 +251,7 @@
     <nav aria-label="Page sections">
       <a href="#overview">Overview</a>
       <a href="#sprint">GenAI sprint</a>
+      <a href="#app1-local">App 1 · local checkpoint</a>
       <a href="#day2">Day 2 · Azure foundations</a>
       <a href="#flow">Learning flow</a>
       <a href="#github">GitHub</a>
@@ -267,7 +268,7 @@
         <article class="stat"><span class="stat-label">Sprint window</span><strong>16 hours</strong><small>September 26–27</small></article>
         <article class="stat"><span class="stat-label">Blocks complete</span><strong>0 of 16</strong><div class="progress-track" aria-label="0 of 16 sprint blocks complete"><div class="progress-fill"></div></div></article>
         <article class="stat"><span class="stat-label">Hard cost cap</span><strong>₹1,500</strong><small>Expected under ₹500</small></article>
-        <article class="stat"><span class="stat-label">Current focus</span><strong>Block 1</strong><small>Expiry, budget, providers</small></article>
+        <article class="stat"><span class="stat-label">Current focus</span><strong>App 1</strong><small>Local verified · Azure next</small></article>
       </div>
       <div class="section-head" style="margin-top: 2.2rem">
         <p class="eyebrow" style="color: var(--azure)">Active objective</p>
@@ -372,6 +373,24 @@ GitHub OIDC → ACR/revisions · Managed identity + RBAC · Shared App Insights/
         </table>
       </article>
       <div class="callout"><strong>Verify before creating:</strong> open <strong>Cost Management + Billing → Free services</strong>. That subscription-specific grid overrides the public marketing list. PostgreSQL and eligible VMs remain excluded because none of these three apps needs them.</div>
+    </section>
+
+    <section id="app1-local" aria-labelledby="app1-local-title">
+      <div class="section-head"><p class="eyebrow" style="color: var(--green)">September 26 · ₹0 Azure spend</p><h2 id="app1-local-title">App 1 local foundation verified</h2><p>The React/FastAPI contract was implemented and tested before opening any paid Azure meter. Azure deployment is still pending.</p></div>
+      <article class="panel">
+        <h3>Implemented request flow</h3>
+        <pre><code>React Chat → POST /api/chat → FastAPI validation → scoped SHA-256 cache key
+                                               ├─ HIT → cached answer, 0 new tokens
+                                               └─ MISS → per-key lock → recheck
+                                                                   → fake/Azure provider
+                                                                   → cache for 15 minutes</code></pre>
+        <p>The cache key includes tenant scope, normalized prompt, provider/model, prompt version, and temperature. A second lookup after lock acquisition prevents waiting requests from making duplicate model calls.</p>
+      </article>
+      <div class="two-col">
+        <article class="panel"><h3>Evidence</h3><ul class="checklist"><li class="checked">18 backend tests passed</li><li class="checked">TypeScript check and Vite production build passed</li><li class="checked">First prompt MISS with tokens; second HIT with zero new tokens</li><li class="checked">20 simultaneous identical misses → 1 provider call, 1 MISS, 19 HITs</li><li class="checked">Desktop MISS/HIT and narrow UI states visually inspected</li></ul></article>
+        <article class="panel"><h3>Honest boundary</h3><ul class="checklist"><li class="checked">React Chat page and shared shell</li><li class="checked">Dedicated FastAPI entry point and cache-aside service</li><li class="checked">Memory/Redis adapters and fake/Azure provider seam</li><li class="checked">Managed-identity token path implemented; cloud RBAC not yet assigned</li><li class="unchecked">ACR and Container Apps</li><li class="unchecked">Foundry, APIM, managed identity assignment, Managed Redis</li><li class="unchecked">Azure logs, revision/rollback, cost, and destruction proof</li></ul></article>
+      </div>
+      <div class="callout warning"><strong>Next safety gate:</strong> check subscription/region support, model availability/quota, and visible portal estimates before creation. Managed Redis is used only if its estimate fits the cap; otherwise keep the local Redis exercise.</div>
     </section>
 
     <section id="day2" aria-labelledby="day2-title">

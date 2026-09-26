@@ -13,10 +13,12 @@ revision, or orchestration. The purpose is not to memorize Azure product names. 
 purpose is to understand a problem well enough to choose a suitable service, predict its
 cost and failure modes, deploy it safely, and explain the decision to another person.
 
-> **Current delivery status:** this is the teaching and design handbook. The existing
-> Feedback Analyzer, local Docker stack, CI checks, and GHCR images are implemented. The
-> three new learning applications and their Azure resources are planned but have not yet
-> been implemented or deployed. Planned behavior must not be mistaken for completed work.
+> **Current delivery status:** the existing Feedback Analyzer, local Docker stack, CI
+> checks, and GHCR images are implemented. App 1 now has a working React Chat page,
+> dedicated FastAPI entry point, fake/Azure provider seam, scoped cache key, TTL cache,
+> Redis-compatible distributed lock, managed-identity model authentication path, and
+> local tests. Its Azure resources are not yet deployed. Apps 2 and 3 remain planned.
+> Local behavior must not be mistaken for a cloud deployment.
 
 ## 1. How to read and use this handbook
 
@@ -220,6 +222,12 @@ runtimes here because independent scaling, failure isolation, and least-privileg
 are exactly the deployment lessons we want to practise.
 
 ## 4. App 1 — Real-time Chat, explained from click to response
+
+**Implementation checkpoint:** the local fake-provider version of this flow is now
+implemented in `frontend/src/pages/ChatPage.tsx`, `backend/app/chat_api.py`,
+`backend/app/chat.py`, and `backend/app/chat_cache.py`. The test suite proves MISS→HIT,
+zero hit tokens, TTL expiry, cache-key boundaries, and one provider call for 20 concurrent
+identical misses. The next checkpoint is manual Azure service creation and deployment.
 
 ### 4.1 The problem in ordinary language
 

@@ -29,3 +29,14 @@ def test_deterministic_usage_accounting():
     second = FakeLLMProvider().analyze(text)
     assert (first.prompt_tokens, first.completion_tokens) == (second.prompt_tokens, second.completion_tokens)
     assert first.prompt_tokens > 0
+
+
+def test_fake_chat_is_deterministic_and_offline():
+    provider = FakeLLMProvider()
+    first = provider.chat("  Explain   queues briefly. ")
+    second = provider.chat("  Explain   queues briefly. ")
+
+    assert first.answer == "Local fake-model response: Explain queues briefly."
+    assert first.answer == second.answer
+    assert first.prompt_tokens > 0
+    assert first.completion_tokens > 0

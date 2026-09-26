@@ -106,7 +106,8 @@ Delivery: required PR checks → immutable SHA image → GitHub OIDC → revisio
     </section>
 
     <section id="chat">
-      <div class="eyebrow" style="color:var(--blue)">App 1 · synchronous</div><h2>Real-time Chat</h2>
+      <div class="eyebrow" style="color:var(--blue)">App 1 · synchronous · local implementation verified</div><h2>Real-time Chat</h2>
+      <div class="callout"><strong>September 26 checkpoint:</strong> the React Chat page, dedicated FastAPI entry point, fake/Azure provider seam, managed-identity authentication path, scoped 15-minute TTL cache, and Redis-compatible per-key lock are implemented. Local tests prove MISS→HIT with zero hit tokens and one provider call for 20 concurrent identical misses. Azure deployment is still pending; Apps 2 and 3 remain designs.</div>
       <div class="two">
         <article class="card chat"><h3>Problem statement</h3><p>Calling the model for every identical safe request wastes latency and tokens. The API must handle concurrent users, scale down while idle, use trusted HTTPS, and roll back safely.</p><h3>Success</h3><ul><li>First request is MISS; second identical request is HIT.</li><li>20 duplicate misses create one model call.</li><li>Replicas scale and return to zero.</li><li>Bad revision is diagnosed and rolled back.</li></ul></article>
         <article class="card"><h3>How we address it</h3><ol><li>Container Apps gives Fargate-style managed container runtime.</li><li>FastAPI computes a tenant/model/prompt-version-aware cache key.</li><li>Managed Redis stores only safe successful output with TTL.</li><li><code>SET NX</code> distributed lock prevents a stampede.</li><li>APIM and Container Apps provide managed TLS.</li><li>Immutable revisions provide rollback.</li></ol></article>
