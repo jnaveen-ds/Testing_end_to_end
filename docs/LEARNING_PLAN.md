@@ -32,15 +32,16 @@ Application Insights + Logs ◀─────┘
 | Service | GenAI purpose | Selection |
 |---|---|---|
 | Resource Group + tags | Lifecycle, cost, RBAC, one-command cleanup | One disposable sprint boundary |
-| Microsoft Foundry | Project/model governance and playground | One project; no provisioned throughput |
-| Foundry model deployment | Real chat completion | Small pay-as-you-go model available in the subscription |
-| Azure AI Search | Retrieval and vector search for RAG | Free SKU if available; otherwise Basic only for the exercise window |
-| Blob Storage | Source documents for grounding | Standard LRS; tiny sample files |
-| Azure Container Registry | Private application image supply chain | Basic SKU, deleted on Day 2 |
+| Microsoft Foundry | Project/model governance and playground | Platform is free; consumed model/features bill normally |
+| Foundry model deployment | Real chat completion | Small pay-as-you-go model; no general free token grant |
+| Azure AI Search | Retrieval and vector search for RAG | Always-free SKU: 50 MB, 10,000 documents, 3 indexes |
+| Blob Storage | Source documents for grounding | 12-month grant: 5 GB Hot LRS plus operation quotas |
+| Azure Container Registry | Private application image supply chain | 12-month grant: one Standard registry, 100 GB, 10 webhooks |
 | Azure Container Apps | HTTPS, revisions, managed identity, scale-to-zero | Minimal FastAPI container; no VM or AKS |
 | Managed Identity + RBAC | Passwordless service-to-service authentication | Model and data access without stored cloud keys |
-| Key Vault | Learn secret governance and fallback key handling | No model key when managed identity works |
-| API Management | Gateway, rate limit, API contract, central policy | Consumption tier only; optional if provisioning is blocked |
+| Key Vault | Learn secret governance and fallback key handling | 12-month grant: 10,000 Standard secret/key operations |
+| API Management | Gateway, rate limit, API contract, central policy | Consumption: first 1 million API operations/month included |
+| Content Safety | Prompt shields and text/image moderation | F0: 5,000 text records and 5,000 images/month; stops at limit |
 | Application Insights + Log Analytics | Traces, failures, latency, model-call visibility | Low-volume lab telemetry |
 | Azure Monitor + Cost Management | Alerting and spend control | Budget/alert plus final cost evidence |
 | GitHub Actions OIDC | Secretless build/deploy and revision creation | Reuse the Day 1 federated identity |
@@ -81,7 +82,7 @@ two-day GenAI learning path.
 - **Hard learning cap:** ₹1,500; stop before creating anything whose portal estimate could
   exceed it. Prices and tax vary, so the portal cost view is authoritative.
 - Use pay-as-you-go token deployments only, low token limits, scale-to-zero compute,
-  Standard LRS storage, ACR Basic, and APIM Consumption.
+  Standard LRS storage, the eligible ACR Standard grant, and APIM Consumption.
 - If AI Search Free is unavailable, create Basic only during the RAG block and delete it
   immediately afterward.
 - Never select provisioned throughput, GPU compute, AKS, premium gateways, or private
@@ -106,6 +107,38 @@ Foundry model tokens, ACR, AI Search Basic when Free is unavailable, Key Vault o
 storage, network egress, and telemetry beyond included grants can all bill on PAYG. The
 sprint therefore ends with deletion regardless of whether the account is later upgraded.
 No upgrade is required or authorized by this plan.
+
+### Free-quota map relevant to a GenAI developer
+
+Free allowances are quantities, not additional currency. They reset monthly, unused
+amounts do not roll over, and the exact SKU matters. The subscription's
+**Cost Management + Billing → Free services** grid is authoritative for eligibility and
+usage; the public list can change.
+
+| Service | Period | Current included amount | Sprint decision |
+|---|---|---|---|
+| Azure AI Search | Always | 50 MB, 10,000 hosted documents, 3 indexes per service | **Use Free** for RAG |
+| Container Apps Consumption | Always | 180,000 vCPU-s, 360,000 GiB-s, 2 million requests/subscription/month | **Use** with scale-to-zero |
+| API Management Consumption | Included monthly | First 1 million API operations/subscription/month | **Use** for gateway/rate limit |
+| Content Safety F0 | Free tier | 5,000 text records and 5,000 images/month; service stops at limit | **Use** for prompt shields/moderation |
+| ACR Standard | First 12 months | One registry, 100 GB storage, 10 webhooks | **Use Standard**, not Basic |
+| Blob Storage Hot LRS | First 12 months | 5 GB, 20,000 reads, 10,000 writes | **Use** for grounding files |
+| Key Vault Standard | First 12 months | 10,000 RSA-2048 key or secret operations | **Use** for secret governance |
+| Document Intelligence S0 | First 12 months | 500 pages | **Stretch:** parse one sample PDF |
+| Azure Language | Always | 5,000 text records | **Stretch:** compare key phrases/sentiment |
+| Functions Consumption | Monthly grant | 1 million executions and 400,000 GB-s | **Stretch:** event-driven ingestion |
+| Event Grid | Always | 100,000 operations/month | **Stretch:** Blob upload event |
+| Service Bus Standard | First 12 months | 750 hours and 13 million operations | Skip unless core sprint finishes early |
+| Cosmos DB free tier | Always | 1,000 RU/s and 25 GB when the free-tier account option is selected | Skip; no conversation database needed |
+| PostgreSQL Flexible | First 12 months | 750 B1ms hours, 32 GB data, 32 GB backup | Skip; FastAPI remains stateless |
+| Linux/Windows VMs | First 12 months | 750 hours each of eligible B1s/B2pts v2/B2ats v2 SKUs | Skip; Container Apps teaches the target path |
+| Microsoft Foundry platform | Platform | Portal/project exploration is free; consumed capabilities bill normally | **Use**, but meter model calls |
+| Foundry/OpenAI model inference | No general grant | Token/model/deployment-specific pay-as-you-go pricing | **Paid from credit**, strict token limits |
+| Azure Monitor logs | No general free ingestion grant shown | Standard metrics/activity logs have free units; Log Analytics ingestion is metered | **Use minimally**, sampling/cap enabled |
+
+This changes the likely sprint cost toward model tokens plus a very small telemetry bill.
+It does not justify adding every free service: a service belongs in the architecture only
+when it teaches a coherent GenAI concern.
 
 ---
 

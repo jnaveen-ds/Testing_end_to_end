@@ -140,7 +140,7 @@ SPRINT_BLOCKS = [
     (3, "Day A", "Create Foundry resource and project manually", "Microsoft Foundry", "usage-based"),
     (4, "Day A", "Deploy/test a small pay-as-you-go chat model", "Foundry Models", "<₹100 target"),
     (5, "Day A", "Minimal synchronous FastAPI /health + /chat", "Local Python/Docker", "₹0"),
-    (6, "Day A", "Build, tag, and push private image", "ACR Basic", "<₹30 target"),
+    (6, "Day A", "Build, tag, and push private image", "ACR Standard (12-month grant)", "free-quota target"),
     (7, "Day A", "Deploy HTTPS scale-to-zero API with telemetry", "Container Apps, Log Analytics, App Insights", "<₹100 target"),
     (8, "Day A", "Managed identity, least privilege, Key Vault", "Entra ID, RBAC, Key Vault", "<₹20 target"),
     (9, "Day B", "Upload two safe grounding documents", "Blob Storage Standard LRS", "<₹10 target"),
@@ -151,6 +151,27 @@ SPRINT_BLOCKS = [
     (14, "Day B", "OIDC build/publish/deploy immutable revision", "GitHub Actions, ACR, Container Apps", "<₹50 target"),
     (15, "Day B", "Logs, tiny load test, alert, revision rollback", "Azure Monitor, Container Apps revisions", "<₹100 target"),
     (16, "Day B", "Evidence, actual cost, delete and prove absence", "Cost Management, Resource Group", "₹0"),
+]
+
+FREE_QUOTAS = [
+    ("AI/RAG", "Azure AI Search", "Always", "50 MB; 10,000 documents; 3 indexes", "Core: Free SKU"),
+    ("Hosting", "Container Apps Consumption", "Always", "180,000 vCPU-s; 360,000 GiB-s; 2M requests/month", "Core: scale to zero"),
+    ("Gateway", "API Management Consumption", "Monthly included", "First 1M API operations/subscription/month", "Core"),
+    ("Safety", "Content Safety F0", "Free tier", "5,000 text records + 5,000 images/month; hard stop", "Core"),
+    ("Registry", "Container Registry Standard", "12 months", "1 registry; 100 GB; 10 webhooks", "Core: exact Standard SKU"),
+    ("Data", "Blob Storage Hot LRS", "12 months", "5 GB; 20,000 reads; 10,000 writes", "Core"),
+    ("Security", "Key Vault Standard", "12 months", "10,000 RSA-2048 key or secret operations", "Core"),
+    ("Document AI", "Document Intelligence S0", "12 months", "500 pages", "Stretch"),
+    ("NLP", "Azure Language", "Always", "5,000 text records", "Stretch"),
+    ("Compute", "Functions Consumption", "Monthly grant", "1M executions + 400,000 GB-s", "Stretch ingestion"),
+    ("Events", "Event Grid", "Always", "100,000 operations/month", "Stretch Blob trigger"),
+    ("Messaging", "Service Bus Standard", "12 months", "750 hours + 13M operations", "Defer"),
+    ("Database", "Cosmos DB free tier", "Always", "1,000 RU/s + 25 GB when free tier selected", "Defer"),
+    ("Database", "PostgreSQL Flexible B1ms", "12 months", "750 hours + 32 GB data + 32 GB backup", "Defer"),
+    ("Compute", "Eligible Linux/Windows VMs", "12 months", "750 hours each for listed B1s/B2pts v2/B2ats v2", "Defer"),
+    ("AI platform", "Microsoft Foundry", "Platform free", "Consumed features bill at their own rates", "Core"),
+    ("Model", "Foundry/OpenAI inference", "Paid", "No general free-token grant; model/token rates", "Core: strict limits"),
+    ("Observability", "Azure Monitor / Log Analytics", "Paid ingestion", "Platform metrics/activity logs have free units; log ingestion metered", "Core: sample/cap"),
 ]
 
 # Per-day cost model. Rates are approximate pay-as-you-go list prices (USD,
@@ -182,7 +203,7 @@ DAY_COSTS = [
     (21, "everything destroyed",                     "-",                                     "-",     0.00),
     (22, "AKS evening: 1 node B2ms ~8h + LB",        "~$0.083/hr node + ~$0.01/hr LB",        "8h",     1.00),
     (23, "App Configuration",                        "free tier: 1k requests/day",            "tiny",   0.01),
-    (24, "App Insights + Log Analytics",             "first 5GB ingestion/month free",        "MBs",    0.00),
+    (24, "App Insights + Log Analytics",             "log ingestion metered; platform metrics free", "tiny", 0.05),
     (25, "pipeline reruns on existing resources",    "no new meters",                         "-",      0.05),
     (26, "finops sweep (nothing new)",               "-",                                     "-",      0.00),
     (27, "write-up day (DB kept only if free tier)", "B1ms beyond allowance = ~$0.41/day",    "-",      0.41),
@@ -262,6 +283,25 @@ def main():
     set_widths(ws, [7, 12, 44, 38, 18, 14, 30, 12])
     ws.freeze_panes = "C2"
 
+    # ---------- Free Quotas ----------
+    ws = wb.create_sheet("Free Quotas")
+    header(ws, ["Category", "Service", "Period", "Included amount", "Sprint decision"])
+    for r, values in enumerate(FREE_QUOTAS, 2):
+        for c, v in enumerate(values, 1):
+            cell = ws.cell(row=r, column=c, value=v)
+            cell.font = Font(size=10)
+            cell.alignment = WRAP
+    note_row = len(FREE_QUOTAS) + 3
+    ws.cell(row=note_row, column=1, value="Important").font = Font(bold=True, color="C00000")
+    ws.cell(row=note_row, column=2,
+            value="Quotas reset monthly and do not roll over. Exact SKU and the subscription's "
+                  "Cost Management > Free services grid are authoritative. PAYG overages bill the card.")
+    ws.cell(row=note_row + 1, column=1, value="Official list").font = Font(bold=True)
+    ws.cell(row=note_row + 1, column=2,
+            value="https://azure.microsoft.com/en-us/pricing/free-services/")
+    set_widths(ws, [16, 32, 18, 56, 28])
+    ws.freeze_panes = "A2"
+
     # ---------- Daily Plan ----------
     ws = wb.create_sheet("Daily Plan")
     header(ws, ["Day", "Date", "Dow", "Phase", "Goal", "Azure services",
@@ -294,7 +334,7 @@ def main():
     free_status = [
         ("static web apps", "Free tier (no charge)"),
         ("postgresql b1ms", "12-month free allowance covers it"),
-        ("app insights", "First 5GB ingestion/month free"),
+        ("app insights", "Log ingestion is metered; keep volume tiny"),
         ("app configuration", "Free tier"),
         ("key vault", "Operations meter only — effectively free"),
         ("aks blade", "-"),

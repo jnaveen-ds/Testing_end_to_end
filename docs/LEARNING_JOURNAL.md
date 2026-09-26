@@ -53,8 +53,9 @@ database, worker, VM, or Kubernetes complexity.
 - Expected tiny-lab usage: under ₹500 when free tiers are available.
 - Hard cap: ₹1,500; portal estimates and Cost Management override rough projections.
 - Use a pay-as-you-go chat model with low token limits, not provisioned throughput.
-- Prefer AI Search Free; if unavailable, use Basic only for the RAG block and delete it.
-- Use ACR Basic, Container Apps scale-to-zero, Storage Standard LRS, and APIM Consumption.
+- Use AI Search Free for the small RAG corpus.
+- Use the eligible ACR Standard 12-month grant, Container Apps scale-to-zero, Storage
+  Standard LRS, and APIM Consumption.
 - Skip VM, AKS, managed databases, premium networking, and private endpoints.
 - All planned charges are Azure-credit eligible. No outside-credit purchase or account
   upgrade is required or authorized.
@@ -72,6 +73,36 @@ not hard stops. GenAI model tokens, ACR, AI Search Basic, Key Vault operations, 
 egress, and excess telemetry can therefore generate PAYG charges. The sprint resources
 will be destroyed even if the owner later chooses to upgrade. No account upgrade has
 been requested or authorized.
+
+### Free services: exact meaning and sprint mapping
+
+The “12 months” and “65+ always-free” benefits are **monthly service quotas, not another
+cash credit**. Unused quantities do not carry forward. After PAYG upgrade, exceeding a
+quota or choosing a non-eligible SKU bills the payment method. Before creation, verify
+the subscription-specific grid at **Cost Management + Billing → Free services**.
+
+| Service | Free period | Included amount | Sprint use |
+|---|---|---|---|
+| Azure AI Search | Always | 50 MB, 10,000 documents, 3 indexes | Core RAG |
+| Container Apps | Always | 180,000 vCPU-s, 360,000 GiB-s, 2 million requests/month | Core hosting |
+| API Management Consumption | Monthly included | First 1 million API operations/month | Core gateway |
+| Content Safety F0 | Free tier | 5,000 text records + 5,000 images/month; stops at limit | Core safety |
+| ACR Standard | 12 months | One registry, 100 GB, 10 webhooks | Core image registry |
+| Blob Storage Hot LRS | 12 months | 5 GB, 20,000 reads, 10,000 writes | Core grounding data |
+| Key Vault Standard | 12 months | 10,000 RSA-2048 key/secret operations | Core secret governance |
+| Document Intelligence S0 | 12 months | 500 pages | Stretch PDF extraction |
+| Azure Language | Always | 5,000 text records | Stretch NLP comparison |
+| Functions Consumption | Monthly included | 1 million executions + 400,000 GB-s | Stretch ingestion worker |
+| Event Grid | Always | 100,000 operations/month | Stretch Blob trigger |
+| Foundry platform | Platform free | Individual consumed features bill normally | Core project/model governance |
+| Foundry/OpenAI inference | **Not generally free** | Token/model-specific pay-as-you-go | Core; use remaining credit with strict limits |
+| Azure Monitor logs | **Ingestion metered** | Platform metrics/activity logs have free units | Core but sampled, tiny volume |
+
+Useful free services deliberately excluded from the two-day core include Cosmos DB
+(1,000 RU/s + 25 GB free-tier account), PostgreSQL Flexible (750 B1ms hours + 32 GB data
+and backup for 12 months), Service Bus Standard (750 hours + 13 million operations for
+12 months), and eligible VMs (750 hours for listed SKUs for 12 months). They solve real
+problems, but this stateless GenAI API does not need them.
 
 ### Two-day completion outcome
 
