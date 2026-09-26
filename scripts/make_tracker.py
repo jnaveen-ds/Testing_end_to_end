@@ -119,6 +119,72 @@ DAYS = [
      "-", "Screenshot everything first", "final az group delete", "1h"),
 ]
 
+DAY_PROGRESS = {
+    1: (
+        "Done",
+        "Yes",
+        "GitHub governance, public GHCR, Entra OIDC/RBAC, and local five-container flow "
+        "completed. Fixed missing nginx /api proxy. Containers and pgdata volume destroyed.",
+    ),
+    2: (
+        "In progress",
+        "",
+        "Accelerated two-day GenAI sprint started after portal confirmed INR 19,109.25 credit "
+        "expires Sep 28. Use ephemeral Cloud Shell; destroy by Sep 27 20:00 IST.",
+    ),
+}
+
+SPRINT_BLOCKS = [
+    (1, "Day A", "Expiry, budget, subscription, quotas, providers", "Cost Management, Resource Providers", "₹0"),
+    (2, "Day A", "Three flows + local shared React SPA and FastAPI contracts + shared cloud platform", "React, FastAPI, RG, Foundry, ACR, Key Vault, Monitor", "<₹100 target"),
+    (3, "Day A", "App 1 FastAPI on Fargate-equivalent hosting + React Chat page", "Container Apps, Static Web Apps, ACR", "free-quota target"),
+    (4, "Day A", "Cache MISS→HIT, managed identity, APIM, trusted HTTPS certificate", "Azure Managed Redis, RBAC, APIM", "Redis estimate required"),
+    (5, "Day A", "Concurrent users, autoscaling, stampede lock, break/fix, revision rollback", "Container Apps, Redis, App Insights", "<₹100 target"),
+    (6, "Day A", "Repeat App 1 deployment from learner's saved commands", "ACR, Container Apps, APIM", "<₹50 target"),
+    (7, "Day A", "Blob, AI Search, Content Safety, lexical/vector retrieval", "Storage, AI Search Free, Content Safety F0", "<₹100 target"),
+    (8, "Day A", "App 2 FastAPI + React Document Q&A; grounded and unknown answers", "Container Apps, Static Web Apps, Foundry, AI Search", "<₹100 target"),
+    (9, "Day B", "Durable runtime, queue TTL/dead letter, Cosmos item TTL", "Functions, Storage, Service Bus, Cosmos DB", "free-quota target"),
+    (10, "Day B", "App 3 FastAPI + React Agent page + approval orchestrator + worker", "Container Apps, Static Web Apps, Durable Functions", "<₹100 target"),
+    (11, "Day B", "Concurrent runs: approve, reject, approval timeout, queue depth", "Durable Functions, Service Bus, Cosmos DB", "<₹50 target"),
+    (12, "Day B", "Duplicate/changed approval, message expiry, retry, dead letter, replay, lock renewal", "Service Bus, Durable Functions, App Insights", "<₹50 target"),
+    (13, "Day B", "Three APIM routes, HTTPS-only, certificate inspection, rate limits", "APIM Consumption, managed TLS", "near ₹0"),
+    (14, "Day B", "OIDC build/publish/deploy immutable revision", "GitHub Actions, ACR, Container Apps", "<₹50 target"),
+    (15, "Day B", "Cross-app logs, tiny load tests, alert, independent repeat deployment", "Azure Monitor, Container Apps revisions", "<₹100 target"),
+    (16, "Day B", "Evidence, actual cost, delete and prove absence", "Cost Management, Resource Group", "₹0"),
+]
+
+SPRINT_PROGRESS = {
+    2: (
+        "In progress",
+        "Local App 1 React/FastAPI contract implemented: MISS→HIT, zero hit tokens, TTL, "
+        "scoped keys, and 20-request stampede test verified. Shared Azure platform pending.",
+        "-",
+    ),
+}
+
+FREE_QUOTAS = [
+    ("AI/RAG", "Azure AI Search", "Always", "50 MB; 10,000 documents; 3 indexes", "Core: Free SKU"),
+    ("Hosting", "Container Apps Consumption", "Always", "180,000 vCPU-s; 360,000 GiB-s; 2M requests/month", "Core: scale to zero"),
+    ("Hosting", "Static Web Apps Free", "Free tier", "Hosting quota shown by the selected plan", "Core shared React SPA"),
+    ("Gateway", "API Management Consumption", "Monthly included", "First 1M API operations/subscription/month", "Core"),
+    ("Safety", "Content Safety F0", "Free tier", "5,000 text records + 5,000 images/month; hard stop", "Core"),
+    ("Registry", "Container Registry Standard", "12 months", "1 registry; 100 GB; 10 webhooks", "Core: exact Standard SKU"),
+    ("Data", "Blob Storage Hot LRS", "12 months", "5 GB; 20,000 reads; 10,000 writes", "Core"),
+    ("Security", "Key Vault Standard", "12 months", "10,000 RSA-2048 key or secret operations", "Core"),
+    ("Document AI", "Document Intelligence S0", "12 months", "500 pages", "Stretch"),
+    ("NLP", "Azure Language", "Always", "5,000 text records", "Stretch"),
+    ("Compute", "Functions Consumption", "Monthly grant", "1M executions + 400,000 GB-s", "Core durable workflow"),
+    ("Events", "Event Grid", "Always", "100,000 operations/month", "Stretch Blob trigger"),
+    ("Messaging", "Service Bus Standard", "12 months", "750 hours + 13M operations", "Core async queue"),
+    ("Database", "Cosmos DB free tier", "Always", "1,000 RU/s + 25 GB when free tier selected", "Core status/audit"),
+    ("Cache", "Azure Managed Redis", "Paid", "No verified free-account grant; hourly SKU charge", "One block if estimate fits; local fallback"),
+    ("Database", "PostgreSQL Flexible B1ms", "12 months", "750 hours + 32 GB data + 32 GB backup", "Defer"),
+    ("Compute", "Eligible Linux/Windows VMs", "12 months", "750 hours each for listed B1s/B2pts v2/B2ats v2", "Defer"),
+    ("AI platform", "Microsoft Foundry", "Platform free", "Consumed features bill at their own rates", "Core"),
+    ("Model", "Foundry/OpenAI inference", "Paid", "No general free-token grant; model/token rates", "Core: strict limits"),
+    ("Observability", "Azure Monitor / Log Analytics", "Paid ingestion", "Platform metrics/activity logs have free units; log ingestion metered", "Core: sample/cap"),
+]
+
 # Per-day cost model. Rates are approximate pay-as-you-go list prices (USD,
 # ~East US; South India similar for these SKUs). Azure free-account allowances
 # (12-month free services) make several of these $0 in practice — shown so you
@@ -148,23 +214,19 @@ DAY_COSTS = [
     (21, "everything destroyed",                     "-",                                     "-",     0.00),
     (22, "AKS evening: 1 node B2ms ~8h + LB",        "~$0.083/hr node + ~$0.01/hr LB",        "8h",     1.00),
     (23, "App Configuration",                        "free tier: 1k requests/day",            "tiny",   0.01),
-    (24, "App Insights + Log Analytics",             "first 5GB ingestion/month free",        "MBs",    0.00),
+    (24, "App Insights + Log Analytics",             "log ingestion metered; platform metrics free", "tiny", 0.05),
     (25, "pipeline reruns on existing resources",    "no new meters",                         "-",      0.05),
     (26, "finops sweep (nothing new)",               "-",                                     "-",      0.00),
     (27, "write-up day (DB kept only if free tier)", "B1ms beyond allowance = ~$0.41/day",    "-",      0.41),
 ]
 
 DEPLOYMENTS = [
-    (1, "Local compose stack (5 containers)", "Docker Compose", "Day 1", "keep (local)"),
-    (2, "Key Vault-backed app configuration", "Key Vault + RBAC", "Day 7", "vault may stay (~$0)"),
-    (3, "Full stack on a VM + TLS + CI deploy-on-push", "VM, VNet, NSG, nginx, TLS", "Days 9-12", "destroy Day 14"),
-    (4, "Container Apps: API + scale-to-zero worker", "Container Apps, KEDA, Log Analytics", "Day 17", "destroy Day 21"),
-    (5, "Managed PostgreSQL wired through Key Vault", "PostgreSQL Flexible", "Day 17", "destroy Day 21 (or keep within free tier)"),
-    (6, "WEBSITE: React UI on Azure Static Web Apps", "Static Web Apps", "Day 19", "destroy Day 26"),
-    (7, "Rollback + blue/green traffic split drill", "Container Apps revisions", "Day 20", "-"),
-    (8, "AKS: 1-node cluster, deploy, destroy same evening", "AKS, kubectl", "Day 22", "destroy same night"),
-    (9, "Load-tested + monitored deployment with alerts", "App Insights, Monitor", "Day 24", "destroy Day 26"),
-    (10, "Full CI/CD: PR -> test -> publish -> deploy -> approve -> rollback", "Actions + OIDC", "Day 25", "-"),
+    (1, "Local compose stack (5 containers)", "Docker Compose", "Day 1", "destroyed after verification"),
+    (2, "Shared website: React SPA with Chat, Document Q&A, and Agent pages", "Azure Static Web Apps", "Sprint Day A", "destroy Sep 27"),
+    (3, "Chat FastAPI: Fargate-equivalent service with cache and TLS", "Container Apps, ACR, Managed Redis, APIM", "Sprint Day A", "Redis same-block; rest Sep 27"),
+    (4, "Document Q&A FastAPI: cited RAG", "Container Apps, Blob, AI Search, Foundry", "Sprint Day A", "destroy Sep 27"),
+    (5, "Approval-gated Agent FastAPI: durable wait, queue, status", "Durable Functions, Service Bus, Cosmos DB", "Sprint Day B", "destroy Sep 27"),
+    (6, "Immutable OIDC redeploy and rollback", "GitHub Actions, ACR, Container Apps", "Sprint Day B", "destroy Sep 27"),
 ]
 
 
@@ -188,16 +250,16 @@ def main():
     ws.title = "Overview"
     lines = [
         ("Azure / DevOps Learning Tracker", ""),
-        ("App", "Feedback Analyzer (FastAPI + Celery + React) - one app, many deployments"),
-        ("Window", "Aug 31 - Sep 27 2026, ~1 h/day (Day 22 AKS = 2 h)"),
-        ("Budget", "$200 trial credit; planned spend ~$8-15 (see Day Cost Plan); destroy same-day"),
+        ("Active apps", "One shared React SPA + three small FastAPI APIs: Chat, Document Q&A, approval-gated Agent"),
+        ("Active window", "Sep 26-27 2026, 16-hour accelerated sprint; destroy by Sep 27 20:00 IST"),
+        ("Credit evidence", "INR 19,109.25 remaining; portal displays Sep 28 expiry; do not rely on Sep 28"),
+        ("Sprint budget", "Expected <INR 500; hard cap INR 1,500; see 'GenAI Sprint' tab"),
         ("Golden rule", "A day is Done only when Destroyed? = Yes (except keep-listed items)"),
         ("Your role", "Portal clicks, az commands, terraform plan review + apply, verification"),
         ("Agent's job", "TF files + exact commands prepared before each session; docs updated"),
-        ("Docs", "docs/LEARNING_PLAN.md · docs/DAILY_PLAYBOOK.md · docs/RUNBOOK.md"),
-        ("Website deployment", "Day 19 (Sat Sep 19): React UI on Azure Static Web Apps, its own URL"),
-        ("Deployments target", "10 tracked deployments — see 'Deployments' tab"),
-        ("Cost tab", "'Day Cost Plan' = planned cost per day + cumulative; 'Cost Log' = what you actually spent"),
+        ("Docs", "Start: AZURE_GENAI_BEGINNER_HANDBOOK.md/html/docx · 1) solution overview · 2) deployment guide · 3) journal"),
+        ("Paused curriculum", "The original 28-day plan remains for later; VM and AKS stages are paused"),
+        ("Cost tabs", "'GenAI Sprint' tracks the active blocks; legacy Day Cost Plan is retained; Cost Log records actuals"),
     ]
     for i, (a, b) in enumerate(lines, 1):
         ws.cell(row=i, column=1, value=a).font = Font(bold=True, size=14 if i == 1 else 10)
@@ -206,6 +268,48 @@ def main():
         cb.font = Font(size=10)
     set_widths(ws, [26, 100])
 
+    # ---------- Accelerated GenAI Sprint ----------
+    ws = wb.create_sheet("GenAI Sprint")
+    header(ws, ["Block", "Sprint day", "Outcome", "Azure services", "Cost guardrail", "Status", "Evidence", "Destroyed?"])
+    for r, (block, sprint_day, outcome, services, cost) in enumerate(SPRINT_BLOCKS, 2):
+        status, evidence, destroyed = SPRINT_PROGRESS.get(block, ("Not started", "", ""))
+        vals = [block, sprint_day, outcome, services, cost, status, evidence, destroyed]
+        for c, v in enumerate(vals, 1):
+            cell = ws.cell(row=r, column=c, value=v)
+            cell.font = Font(size=10)
+            cell.alignment = WRAP
+    dv = DataValidation(type="list", formula1='"Not started,In progress,Done,Skipped,Blocked"', allow_blank=True)
+    ws.add_data_validation(dv)
+    dv.add(f"F2:F{len(SPRINT_BLOCKS) + 1}")
+    dv2 = DataValidation(type="list", formula1='"Yes,No,-"', allow_blank=True)
+    ws.add_data_validation(dv2)
+    dv2.add(f"H2:H{len(SPRINT_BLOCKS) + 1}")
+    ws.cell(row=len(SPRINT_BLOCKS) + 3, column=1, value="Deadline").font = Font(bold=True)
+    ws.cell(row=len(SPRINT_BLOCKS) + 3, column=2, value="Delete sprint RG and verify absence by Sep 27 20:00 IST")
+    ws.cell(row=len(SPRINT_BLOCKS) + 4, column=1, value="Hard cap").font = Font(bold=True)
+    ws.cell(row=len(SPRINT_BLOCKS) + 4, column=2, value="INR 1,500; stop before any unexpected paid tier")
+    set_widths(ws, [7, 12, 44, 38, 18, 14, 30, 12])
+    ws.freeze_panes = "C2"
+
+    # ---------- Free Quotas ----------
+    ws = wb.create_sheet("Free Quotas")
+    header(ws, ["Category", "Service", "Period", "Included amount", "Sprint decision"])
+    for r, values in enumerate(FREE_QUOTAS, 2):
+        for c, v in enumerate(values, 1):
+            cell = ws.cell(row=r, column=c, value=v)
+            cell.font = Font(size=10)
+            cell.alignment = WRAP
+    note_row = len(FREE_QUOTAS) + 3
+    ws.cell(row=note_row, column=1, value="Important").font = Font(bold=True, color="C00000")
+    ws.cell(row=note_row, column=2,
+            value="Quotas reset monthly and do not roll over. Exact SKU and the subscription's "
+                  "Cost Management > Free services grid are authoritative. PAYG overages bill the card.")
+    ws.cell(row=note_row + 1, column=1, value="Official list").font = Font(bold=True)
+    ws.cell(row=note_row + 1, column=2,
+            value="https://azure.microsoft.com/en-us/pricing/free-services/")
+    set_widths(ws, [16, 32, 18, 56, 28])
+    ws.freeze_panes = "A2"
+
     # ---------- Daily Plan ----------
     ws = wb.create_sheet("Daily Plan")
     header(ws, ["Day", "Date", "Dow", "Phase", "Goal", "Azure services",
@@ -213,8 +317,9 @@ def main():
     cost_by_day = {dc[0]: dc[4] for dc in DAY_COSTS}
     for r, (day, date, phase, goal, services, portal, cli, t) in enumerate(DAYS, 2):
         d = dt.date.fromisoformat(date)
+        status, destroyed, notes = DAY_PROGRESS.get(day, ("Not started", "", ""))
         vals = [day, date, d.strftime("%a"), phase, goal, services, portal, cli, t,
-                "Not started", cost_by_day.get(day, ""), "", ""]
+                status, cost_by_day.get(day, ""), destroyed, notes]
         for c, v in enumerate(vals, 1):
             cell = ws.cell(row=r, column=c, value=v)
             cell.font = Font(size=10)
@@ -224,7 +329,7 @@ def main():
     dv.add(f"J2:J{len(DAYS) + 1}")
     dv2 = DataValidation(type="list", formula1='"Yes,No,-"', allow_blank=True)
     ws.add_data_validation(dv2)
-    dv2.add(f"M2:M{len(DAYS) + 1}")
+    dv2.add(f"L2:L{len(DAYS) + 1}")
     set_widths(ws, [5, 11, 6, 12, 34, 24, 38, 38, 6, 12, 9, 11, 22])
     ws.freeze_panes = "E2"
 
@@ -237,7 +342,7 @@ def main():
     free_status = [
         ("static web apps", "Free tier (no charge)"),
         ("postgresql b1ms", "12-month free allowance covers it"),
-        ("app insights", "First 5GB ingestion/month free"),
+        ("app insights", "Log ingestion is metered; keep volume tiny"),
         ("app configuration", "Free tier"),
         ("key vault", "Operations meter only — effectively free"),
         ("aks blade", "-"),
@@ -266,7 +371,9 @@ def main():
     ws = wb.create_sheet("Deployments")
     header(ws, ["#", "Deployment", "Azure services", "Day", "End-state plan", "Status", "Evidence link"])
     for r, (n, what, services, day, plan) in enumerate(DEPLOYMENTS, 2):
-        for c, v in enumerate([n, what, services, day, plan, "Not started", ""], 1):
+        status = "Done" if n == 1 else "Not started"
+        evidence = "docs/LEARNING_JOURNAL.md#day-1--github-governance-azure-oidc-and-first-local-run" if n == 1 else ""
+        for c, v in enumerate([n, what, services, day, plan, status, evidence], 1):
             cell = ws.cell(row=r, column=c, value=v)
             cell.font = Font(size=10)
             cell.alignment = WRAP
@@ -275,6 +382,12 @@ def main():
     # ---------- Cost Log ----------
     ws = wb.create_sheet("Cost Log")
     header(ws, ["Date", "Resource group", "Service", "Est. cost $", "Actual cost $", "Destroyed?", "Notes"])
+    first_day_cost = [
+        "2026-08-31", "local (no Azure RG)", "GitHub/Entra setup + Docker Compose",
+        0.00, 0.00, "Yes", "Local stack and pgdata volume removed; reusable $0 identity/config retained",
+    ]
+    for c, v in enumerate(first_day_cost, 1):
+        ws.cell(row=2, column=c, value=v).alignment = WRAP
     ws.cell(row=40, column=4, value="TOTAL:").font = Font(bold=True)
     ws.cell(row=40, column=5, value="=SUM(D2:D39)").font = Font(bold=True)
     ws.cell(row=40, column=6, value="=SUM(E2:E39)").font = Font(bold=True)

@@ -15,6 +15,7 @@ from sqlalchemy import select, func as sqlfunc
 from sqlalchemy.orm import Session
 
 from app.config import get_settings
+from app.chat import router as chat_router
 from app.db import Base, engine, get_db
 from app.llm import get_provider
 from app.models import AnalysisJob, JobStatus
@@ -32,6 +33,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+app.include_router(chat_router)
 
 
 @app.on_event("startup")

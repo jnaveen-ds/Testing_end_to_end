@@ -1,7 +1,13 @@
-# Architecture — Feedback Analyzer (end-to-end walkthrough)
+# Architecture — Feedback Analyzer and App 1 Chat
 
 This document explains every component, every request flow, and how each file maps
 to a real production concept. Written for a backend engineer learning the full stack.
+
+The original queued Feedback Analyzer remains implemented. App 1 adds a second,
+synchronous learning path: React calls `POST /chat`, FastAPI checks a scoped TTL cache,
+and only a cache miss invokes the configured fake/Azure provider. The same FastAPI image
+can run the combined local API (`app.main:app`) or the dedicated future Container App
+entry point (`app.chat_api:app`).
 
 ---
 
@@ -140,7 +146,7 @@ Everything is environment-driven (`app/config.py`); nothing is hardcoded:
 | `DATABASE_URL` | SQLite (local) | Postgres inside compose, Azure PostgreSQL later |
 | `REDIS_URL` | localhost | Redis inside compose |
 | `LLM_PROVIDER` | `fake` | `fake` = free/offline; `azure` = real Azure OpenAI |
-| `AZURE_OPENAI_*` | empty | endpoint/key/deployment — real values only in `.env` (never committed) or Key Vault in later stages |
+| `AZURE_OPENAI_*` | empty | endpoint/auth/deployment; API keys stay in `.env`/Key Vault, while Azure runtime uses managed identity |
 
 The same image + different env vars = different behavior per environment (dev → staging → prod). That is the 12-factor principle, and it is what makes the later Terraform stages simple.
 
@@ -184,3 +190,93 @@ curl -X POST localhost:8000/analyses -H 'Content-Type: application/json' \
      -d '{"text":"app is slow but support was great"}'
 # {"id":"...","status":"pending",...}   ← then GET /analyses/{id} until "completed"
 ```
+
+---
+
+## 8. App 1 real-time Chat — implemented local architecture
+
+```text
+React Chat page (`frontend/src/pages/ChatPage.tsx`)
+        │ POST /api/chat
+        ▼
+nginx/Vite removes /api → FastAPI `/chat` (`backend/app/chat.py`)
+        │ validate 1..2000 characters
+        │ build SHA-256 key from tenant + prompt + provider/model + prompt version
+        ▼
+ChatCache (`backend/app/chat_cache.py`)
+        ├─ HIT  → answer + zero new model tokens
+        └─ MISS → per-key lock → check cache again → provider.chat(prompt)
+                                              │
+                                              ▼
+                              Fake provider locally/CI, Azure provider when opted in
+                                              │
+                                              ▼
+                              cache successful answer for 900 seconds → response
+```
+
+### Request lifecycle
+
+1. React trims the prompt, enforces a 2,000-character browser limit, and posts JSON through
+   the same-origin `/api` path. FastAPI independently rejects blank or oversized input.
+2. `cache_key()` includes the fixed learning tenant scope, normalized whitespace,
+   provider/model, prompt version, and temperature. This prevents reuse across boundaries
+   that can change answer meaning or authorization.
+3. On a HIT, FastAPI returns the cached answer with zero prompt/completion tokens and zero
+   model latency. Each HTTP response still receives its own correlation ID.
+4. On a MISS, a per-key lock prevents concurrent identical requests from all invoking the
+   provider. The cache is checked again after lock acquisition because another request may
+   have produced the value while this request waited.
+5. Only a successful answer is cached. The in-memory cache is the free test/default path;
+   Compose selects Redis so different API replicas can share values and locks.
+6. Redis read/write/lock failures degrade to a cache miss. This preserves availability,
+   but future gateway rate limits and maximum replicas must bound model cost during an
+   outage.
+
+### File map
+
+| File | Responsibility |
+|---|---|
+| `backend/app/chat_api.py` | Dedicated App 1 FastAPI application with `/health`, `/ready`, and `/chat` |
+| `backend/app/chat.py` | Cache-key contract, synchronous cache-aside service, and route |
+| `backend/app/chat_cache.py` | In-memory TTL cache for tests and Redis cache/distributed lock for shared runtime |
+| `backend/app/llm.py` | Common `.chat()` provider seam; deterministic fake and Azure implementation |
+| `backend/tests/test_chat.py` | MISS/HIT, zero hit tokens, input boundaries, key scope, TTL, and stampede tests |
+| `frontend/src/pages/ChatPage.tsx` | Prompt form, loading/error states, cache badge, token/latency metrics, correlation ID |
+| `frontend/src/App.tsx` | Shared shell and tabs for App 1 and the existing Feedback Analyzer |
+
+### Configuration
+
+| Variable | Default | Local/Compose meaning | Azure mapping |
+|---|---|---|---|
+| `CHAT_CACHE_BACKEND` | `memory` | Tests need no service; Compose sets `redis` | Azure Managed Redis after estimate approval |
+| `CHAT_CACHE_TTL_SECONDS` | `900` | 15-minute response freshness exercise | Environment setting; measured per use case |
+| `CHAT_PROMPT_VERSION` | `v1` | Changing prompt behavior creates new cache keys | Revision configuration |
+| `CHAT_TENANT_SCOPE` | `public-learning-demo` | One fixed non-authenticated lab scope | Replace with authenticated tenant/user scope before multi-tenant production |
+| `REDIS_URL` | localhost | Compose uses `redis://redis:6379/0` | Managed Redis TLS/Entra configuration later |
+| `LLM_PROVIDER` | `fake` | Free deterministic development/CI | `azure` only for controlled Foundry calls |
+| `AZURE_OPENAI_AUTH` | `api_key` | Optional local real-provider experiment | `managed_identity`; no model API key in the app |
+| `AZURE_MANAGED_IDENTITY_CLIENT_ID` | empty | Not needed for fake/API-key mode | User-assigned identity client ID; empty uses the default Azure credential chain |
+
+### Local-to-Azure mapping
+
+| Local implementation | Azure target | Why the contract stays the same |
+|---|---|---|
+| Vite/nginx same-origin `/api` | Static Web Apps → APIM | Browser still knows only one public API base |
+| `app.chat_api:app` under uvicorn | Azure Container Apps revision | Same image/entry point, managed ingress and scaling |
+| `MemoryChatCache` / Redis container | Azure Managed Redis | `ChatCache` contract keeps service logic unchanged |
+| `FakeLLMProvider` | Foundry/Azure OpenAI provider | `.chat()` returns the same typed result |
+| process-local logs | Application Insights/Log Analytics | Correlation ID and metrics become cloud traces |
+
+### Verification completed locally
+
+- Full backend suite: 18 tests passed.
+- Frontend: TypeScript check and production build passed.
+- Live request: first identical prompt returned MISS with tokens; second returned HIT with
+  zero prompt and completion tokens.
+- Twenty concurrent identical requests produced one provider invocation in the asymmetric
+  stampede test.
+- Desktop and narrow React states were rendered and inspected.
+
+Azure verification remains pending: ACR image, Container Apps scale-to-zero, managed
+identity, Foundry tokens, APIM HTTPS/rate limit, Managed Redis, telemetry, revision, and
+rollback.

@@ -3,6 +3,16 @@
 This is the day-by-day record of the work actually performed. It complements:
 
 - [LEARNING_JOURNAL.html](LEARNING_JOURNAL.html): responsive visual/infographic view
+- [AZURE_GENAI_BEGINNER_HANDBOOK.md](AZURE_GENAI_BEGINNER_HANDBOOK.md),
+  [visual HTML](AZURE_GENAI_BEGINNER_HANDBOOK.html), and
+  [Word document](AZURE_GENAI_BEGINNER_HANDBOOK.docx): plain-language teaching edition
+  with detailed flow and decision explanations
+- [GENAI_SOLUTION_OVERVIEW.md](GENAI_SOLUTION_OVERVIEW.md) and
+  [visual overview](GENAI_SOLUTION_OVERVIEW.html): three problem statements, architecture,
+  service/deployment tradeoffs, cost, latency, and security
+- [GENAI_DEPLOYMENT_GUIDE.md](GENAI_DEPLOYMENT_GUIDE.md) and
+  [visual guide](GENAI_DEPLOYMENT_GUIDE.html): app-by-app build, Azure enablement,
+  portal/CLI, CI/CD, verification, and destruction
 - [LEARNING_PLAN.md](LEARNING_PLAN.md): schedule, goals, and budget
 - [DAILY_PLAYBOOK.md](DAILY_PLAYBOOK.md): planned portal and CLI instructions
 - [Learning_Tracker.xlsx](Learning_Tracker.xlsx): progress and cost tracker
@@ -20,7 +30,336 @@ A day is complete only after its verification and destroy checklist passes.
 
 | Day | Topic | Status | Planned cost | Actual cost | Cleanup |
 |---|---|---|---:|---:|---|
-| 1 | GitHub governance, GHCR, Azure OIDC, local Compose | In progress | $0 | $0 so far | Pending local Compose cleanup |
+| 1 | GitHub governance, GHCR, Azure OIDC, local Compose | **Done** | $0 | **$0** | Containers and volume destroyed |
+| 2 | Accelerated GenAI deployment sprint | **In progress — App 1 local foundation verified** | <₹1,500 cap | **₹0 so far** | No Azure sprint resource created yet |
+
+## Day 2 checkpoint — App 1 local foundation
+
+**Date:** 2026-09-26
+
+**Azure cost:** ₹0. No App 1 Azure resource has been created.
+
+**Status:** local implementation and verification complete; Azure deployment pending.
+
+We deliberately built and tested the application contract before opening paid cloud
+meters. The shared React frontend now has a Real-time Chat page alongside the existing
+Feedback Analyzer. Its FastAPI path validates the prompt, creates a tenant/model/prompt-
+version-aware SHA-256 cache key, checks a TTL cache, and invokes the configured provider
+only on a miss. Tests use an in-memory implementation; Docker Compose selects Redis so
+multiple API processes can share cached values and a per-key distributed lock.
+
+### Implemented flow
+
+```text
+React Chat page → POST /api/chat → FastAPI validation → scoped cache key
+                                                    ├─ HIT → cached answer, 0 new tokens
+                                                    └─ MISS → per-key lock → recheck
+                                                                        → provider
+                                                                        → cache 15 min
+```
+
+The second check after acquiring the lock matters. If 20 identical requests miss at the
+same time, one request computes while the others wait. When each waiter receives the lock,
+it sees the value written by the first request rather than calling the model again. This
+is the cache-stampede behavior we need before moving to Azure Managed Redis.
+
+### Verification evidence
+
+```text
+cd backend && ../.venv/bin/python -m pytest -v
+18 passed
+
+cd frontend && npx tsc --noEmit && npm run build
+TypeScript passed; Vite production build completed
+
+Live fake-provider request 1: cache_status=MISS, non-zero prompt/completion tokens
+Same request 2:             cache_status=HIT,  zero prompt/completion tokens
+Concurrency test:          20 identical requests, 1 provider call, 1 MISS, 19 HITs
+```
+
+The desktop cache MISS/HIT states and narrow layout were rendered and visually inspected.
+The HIT state clearly showed zero new model tokens and the narrow page had no horizontal
+clipping. This is local fake-provider evidence, not proof of Azure behavior.
+
+### Files and contracts added
+
+- `backend/app/chat_api.py`: dedicated future Container Apps entry point.
+- `backend/app/chat.py`: `/chat`, cache key, and cache-aside flow.
+- `backend/app/chat_cache.py`: in-memory/Redis TTL caches and per-key lock.
+- `backend/app/llm.py`: common synchronous `.chat()` seam; Azure calls can use a local API
+  key or a short-lived managed-identity token in Container Apps, so no model key is
+  required in the cloud environment.
+- `frontend/src/pages/ChatPage.tsx`: prompt, answer, cache, token, latency, and correlation UI.
+- `backend/tests/test_chat.py`: boundaries, TTL, key isolation, MISS/HIT, and stampede tests.
+
+### Next checkpoint and safety gate
+
+Before Azure creation, inspect subscription/region support, model availability/quota, and
+portal estimates. Then create the shared platform manually: tagged resource group, ACR,
+logs/Container Apps environment, managed identity/RBAC, and Foundry deployment. Managed
+Redis is created only after its visible estimate fits the cap; otherwise local Redis remains
+the learning fallback. Nothing is called “deployed” until the public Azure HTTPS path,
+identity, logs, scaling/revision behavior, cost, and cleanup are verified.
+
+## Schedule change — two-day GenAI deployment sprint
+
+**Confirmed portal evidence:** ₹19,109.25 Azure credit remains and the displayed expiry
+date is September 28, 2026. The offer provides credit for 30 days and does not guarantee
+availability through local midnight on the displayed date. The operational deadline is
+therefore **8:00 PM IST on September 27**, with September 28 reserved only for
+contingency.
+
+The learner can contribute about 16 hours across two days. The old broad schedule is
+paused in favor of three small applications on one shared production-shaped platform:
+
+```text
+Client → shared React SPA → APIM
+              ├→ Chat FastAPI / Container Apps → Managed Redis → Foundry
+              ├→ RAG FastAPI / Container Apps → AI Search → Blob
+              └→ Agent FastAPI → Durable Functions waits for approval/TTL
+                             └→ Service Bus → agent Function → Cosmos DB
+GitHub OIDC → ACR/revisions; managed identity + RBAC; shared App Insights/Logs
+```
+
+Every scenario uses React for the user experience and FastAPI for its public backend.
+One shared React SPA keeps the exercise small: it has Chat, Document Q&A, and Agent
+Approval pages and reuses the layout, API client, status display, and styling. Each page
+calls a separate small FastAPI API through APIM. Browser code never calls Redis, Search,
+Durable Functions, Service Bus, or Cosmos DB directly.
+
+App 1 is a synchronous `/health` and `/chat` API deployed as the Azure equivalent of an
+ECS Fargate service. App 2 is a grounded document Q&A API with citations and an
+unknown-answer case. App 3 is a long-running agent that returns a run ID, proposes a
+plan, waits durably for human approval, and only then queues execution and exposes
+persisted status/results. The
+three deployment styles cover real-time model serving, RAG, and event-driven inference
+without adding frontend, VM, or Kubernetes complexity. They share Foundry, registry,
+gateway, identity, and monitoring resources so the learner spends time on the differences.
+
+For App 1, Azure Container Apps is the best practical Fargate equivalent: ECS schedules
+containers and Fargate provides serverless compute, while Container Apps combines
+managed serverless compute with HTTPS ingress, revisions, KEDA autoscaling, logs,
+scale-to-zero, and rollback. Azure Container Instances is closer to running a raw
+container directly, and Container Apps Jobs is closer to one-off Fargate tasks. Neither
+is as suitable as a Container App for this long-running HTTP API exercise.
+
+Multiple concurrent users are handled first by Container Apps replicas, per-replica
+concurrency, and autoscaling. A queue is not required for every HTTP call. App 3 uses
+Service Bus to absorb bursts of approved long-running work, cap model/tool concurrency,
+retry transient failures, and isolate expired or repeatedly failing jobs.
+
+App 1 uses Azure Managed Redis as a cache-aside layer. The key includes normalized
+input, tenant/auth scope, model deployment, prompt version, and generation parameters.
+A hit saves a model call and tokens; a miss computes once and stores only a successful,
+safe result with a short TTL. A distributed lock prevents a cache stampede. Personalized
+data is never shared across tenants and Redis is not the durable system of record.
+
+Azure Cache for Redis Basic/Standard/Premium is retiring, and creation for new
+public-cloud customers has been blocked since April 1, 2026. The lab uses Azure Managed
+Redis with TLS 1.2/1.3 only if its smallest dev/test portal estimate fits the cap. It is
+paid and deleted after the block; local open-source Redis is the fallback.
+
+App 3's FastAPI API uses Durable Functions internally rather than holding an HTTP request
+or process while a human decides. `POST /runs` returns `202`, a run ID, and a status URL.
+The React page displays `planning → awaiting approval → queued → running → completed`,
+plus rejected and expired outcomes. The orchestrator saves
+the proposed plan and waits for an external approval event while racing a 10-minute
+durable timer. Approval continues to Service Bus; rejection or timeout terminates without
+executing the action. Approval stores actor, timestamp, decision, and immutable plan hash,
+and duplicate decisions are idempotent.
+
+The sprint tests four separate lifetime controls: Redis cache TTL, Service Bus message
+TTL/dead lettering, Durable Functions approval TTL, and Cosmos DB item TTL for old lab
+records. Worker execution has its own deadline and queue-lock renewal; message TTL is not
+misused to terminate already-running code. Work is checkpointed into idempotent steps.
+
+Public SSL/TLS needs no purchased domain. Container Apps and APIM generated hostnames use
+Microsoft-managed trusted certificates. We inspect the chain and expiry, verify HTTPS-only
+behavior, and keep APIM-to-backend traffic on HTTPS. A custom-domain managed certificate
+is optional only when the learner already controls the DNS domain.
+
+Each app follows the same learning loop: manual deployment, successful request, logs,
+deliberate failure, recovery, immutable redeployment, evidence, and destruction. The
+learner repeats App 1 from their own saved commands; repetition is part of completion,
+not a fourth architecture.
+
+### Sprint cost and safety decision
+
+- Expected tiny-lab usage: under ₹500 when free tiers are available.
+- Hard cap: ₹1,500; portal estimates and Cost Management override rough projections.
+- Use a pay-as-you-go chat model with low token limits, not provisioned throughput.
+- Use AI Search Free for the small RAG corpus.
+- Use the eligible ACR Standard 12-month grant, Container Apps scale-to-zero, Storage
+  Standard LRS, APIM Consumption, Functions Consumption, one Service Bus queue, and an
+  eligible Cosmos DB free-tier account.
+- Azure Managed Redis is paid and short-lived; review its estimate before creation and
+  use local Redis if it threatens the cap.
+- If Cosmos free tier is unavailable, use Table Storage for App 3 job state. If Service
+  Bus Standard is not eligible, keep it only for the async block and delete immediately.
+- Skip VM, AKS, managed PostgreSQL, legacy Azure Cache for Redis, premium networking,
+  and private endpoints.
+- All planned charges are Azure-credit eligible. No outside-credit purchase or account
+  upgrade is required or authorized.
+
+### Post-trial clarification
+
+Pay-As-You-Go does not begin automatically. Without an explicit upgrade, the free-trial
+subscription and services are disabled when the credit expires or is exhausted. With an
+upgrade, eligible 12-month grants continue only until 12 months from the original signup,
+and always-free monthly grants remain subject to each service's current quota. The
+promotional credit still expires on September 28.
+
+Anything outside those exact grants bills the payment method. Azure budgets are alerts,
+not hard stops. GenAI model tokens, ACR, AI Search Basic, Key Vault operations, storage,
+egress, and excess telemetry can therefore generate PAYG charges. The sprint resources
+will be destroyed even if the owner later chooses to upgrade. No account upgrade has
+been requested or authorized.
+
+### Free services: exact meaning and sprint mapping
+
+The “12 months” and “65+ always-free” benefits are **monthly service quotas, not another
+cash credit**. Unused quantities do not carry forward. After PAYG upgrade, exceeding a
+quota or choosing a non-eligible SKU bills the payment method. Before creation, verify
+the subscription-specific grid at **Cost Management + Billing → Free services**.
+
+| Service | Free period | Included amount | Sprint use |
+|---|---|---|---|
+| Azure AI Search | Always | 50 MB, 10,000 documents, 3 indexes | Core RAG |
+| Container Apps | Always | 180,000 vCPU-s, 360,000 GiB-s, 2 million requests/month | Core hosting |
+| Static Web Apps Free | Free tier | Hosting quota shown by the selected plan | Core shared React SPA |
+| API Management Consumption | Monthly included | First 1 million API operations/month | Core gateway |
+| Content Safety F0 | Free tier | 5,000 text records + 5,000 images/month; stops at limit | Core safety |
+| ACR Standard | 12 months | One registry, 100 GB, 10 webhooks | Core image registry |
+| Blob Storage Hot LRS | 12 months | 5 GB, 20,000 reads, 10,000 writes | Core grounding data |
+| Key Vault Standard | 12 months | 10,000 RSA-2048 key/secret operations | Core secret governance |
+| Document Intelligence S0 | 12 months | 500 pages | Stretch PDF extraction |
+| Azure Language | Always | 5,000 text records | Stretch NLP comparison |
+| Functions Consumption | Monthly included | 1 million executions + 400,000 GB-s | Core durable workflow/worker |
+| Event Grid | Always | 100,000 operations/month | Stretch Blob trigger |
+| Azure Managed Redis | **Paid** | No verified free-account allowance; hourly SKU charge | Core cache exercise only if portal estimate fits |
+| Service Bus Standard | 12 months | 750 hours + 13 million operations | Core agent queue |
+| Cosmos DB free tier | Always | 1,000 RU/s + 25 GB when selected | Core status/audit with item TTL |
+| Foundry platform | Platform free | Individual consumed features bill normally | Core project/model governance |
+| Foundry/OpenAI inference | **Not generally free** | Token/model-specific pay-as-you-go | Core; use remaining credit with strict limits |
+| Azure Monitor logs | **Ingestion metered** | Platform metrics/activity logs have free units | Core but sampled, tiny volume |
+
+Cosmos DB (1,000 RU/s + 25 GB when the one free-tier account option is available),
+Service Bus Standard (750 hours + 13 million operations for 12 months), and Functions
+Consumption are now used by the async application. PostgreSQL Flexible and eligible VMs
+remain excluded because none of the three applications needs them.
+
+### Two-day completion outcome
+
+- [ ] Shared Foundry chat/embedding deployments, ACR, identity, Key Vault, and monitoring exist
+- [ ] Shared React SPA exposes working Chat, Document Q&A, and Agent Approval pages
+- [ ] Each page calls a FastAPI backend through APIM; browser code has no direct data/service credentials
+- [ ] App 1 reaches `/health` and real `/chat` through APIM, proves cache MISS→HIT token savings, scales to zero, and creates a new revision
+- [ ] Concurrent duplicate requests prove autoscaling and cache-stampede protection
+- [ ] App 1 is deliberately broken/recovered, rolled back, and independently redeployed once
+- [ ] App 2 returns a cited grounded answer and correctly handles an unknown answer
+- [ ] App 3 returns `202`, persists a plan, and exercises approve, reject, timeout, and duplicate-approval paths
+- [ ] Approved work moves through Service Bus; burst depth, concurrency, retry, message expiry/dead letter, repair/replay, and idempotency are observed
+- [ ] Redis, Service Bus, approval, and Cosmos item TTLs are independently verified
+- [ ] Managed identities call Azure services without stored Azure service keys
+- [ ] APIM exposes all three contracts and enforces a small rate limit
+- [ ] Public certificate chain/expiry, HTTPS-only behavior, and APIM-to-backend HTTPS are verified
+- [ ] Application Insights/Logs show requests, latency, queue behavior, and deliberate failures
+- [ ] GitHub OIDC publishes/deploys immutable versions without an Azure client secret
+- [ ] Evidence and actual cost are recorded
+- [ ] Sprint resource group is deleted and absence is verified before the deadline
+
+## Day 2 — Understand Azure's management boundary before deploying
+
+**Date:** 2026-09-13
+**Services:** Azure Cloud Shell, Azure Resource Manager, Resource Groups, and Resource
+Providers
+**Goal:** Understand why Azure requires a resource group, compare that boundary with AWS,
+create one tagged empty group manually, inspect it through CLI, and destroy it.
+**Planned cost:** $0. An empty resource group and resource-provider registrations have no
+usage meters. Outside the $200 Azure credit: $0.
+
+### The problem a resource group solves
+
+A deployment usually creates several connected resources: an application, network,
+database, secrets, monitoring, and identities. Without a shared boundary, answering
+“which resources belong to this experiment?”, granting access, checking its cost, and
+cleaning it up all depend on remembering names or querying tags.
+
+Azure requires every resource to belong to exactly one resource group. We will use one
+group per learning experiment because it provides:
+
+- **Lifecycle:** create and delete an experiment as a unit. Deleting the group deletes
+  the resources inside it, subject to locks and service-specific deletion behavior.
+- **Access scope:** apply Azure RBAC once at the group instead of separately on every
+  child resource.
+- **Governance:** apply Azure Policy and resource locks at the group boundary.
+- **Operations:** see deployments, activity logs, and related resources together.
+- **Cost allocation:** filter Cost Management by resource group and tags.
+
+A resource group is not a server, network, or billing invoice. Resource groups cannot be
+nested. Its selected region stores the group's control-plane metadata; resources inside
+may use other supported regions, although colocating a workload is usually simpler.
+
+### Azure and AWS comparison
+
+There is no exact AWS equivalent to an Azure resource group:
+
+| Azure concept | Closest AWS concept | Important difference |
+|---|---|---|
+| Microsoft Entra tenant | AWS Organizations identity/governance layer | Different identity models; not a direct mapping |
+| Azure subscription | AWS account | Both provide strong billing, quota, and access boundaries |
+| Resource group | CloudFormation stack + AWS Resource Groups/tags + IAM scoping | Azure requires every resource to have one resource group; AWS does not require one universal container |
+| ARM/Bicep or Terraform deployment | CloudFormation or Terraform stack | Declares and tracks infrastructure resources |
+| VNet | VPC | These are the actual virtual-network equivalents; a VPC is not a resource group |
+| Azure RBAC at resource-group scope | IAM policy constrained to resource ARNs/tags | Azure's hierarchy provides a native inherited scope |
+
+We selected an empty resource group for Day 2 because it teaches this boundary without
+creating a billable service. Tomorrow, the same boundary will contain a Key Vault.
+
+### Managed-laptop installation problem and safe decision
+
+`winget install --exact --id Microsoft.AzureCLI` opened Windows UAC on the company
+laptop. The learner's normal company credentials were rejected because software
+installation requires an IT-approved administrator account. This is an endpoint-policy
+restriction, not an Azure password failure. Do not keep retrying credentials, disable
+controls, or use an unapproved portable installation.
+
+The supported alternative is an ephemeral Azure Cloud Shell session, which provides an
+authenticated, preinstalled Azure CLI in the browser without changing the laptop:
+
+1. Azure Portal top toolbar **Cloud Shell (`>_`)**.
+2. Choose **Bash**.
+3. Select **No storage account required**.
+4. Select the learning subscription and **Apply**.
+5. If required, register `Microsoft.CloudShell` under **Subscriptions → Resource
+   providers**; registration costs $0.
+
+Ephemeral Cloud Shell does not create a storage account. Files disappear when the shell
+closes, which is appropriate for today's inspection commands. `az login` is unnecessary
+because Cloud Shell authenticates the signed-in portal user automatically.
+
+### Why these Day 2 selections
+
+- **South India:** intended home region for this learning project; future latency and
+  availability choices can be discussed from a consistent baseline.
+- **Name `learn-cli-0913`:** identifies purpose and session while remaining disposable.
+- **Tags:** `purpose=learning`, `day=2`, `expires=2026-09-16` communicate ownership and
+  lifecycle to humans, scripts, policy, and cost reports.
+- **`Microsoft.ContainerRegistry`:** registering this resource provider enables later ACR
+  deployments. Registration does not create a registry and costs $0.
+- **Destroy today:** proves that cleanup is a designed deployment step rather than a
+  promise to remember later.
+
+### Day 2 status
+
+- [x] Local Azure CLI installation blocker understood; no company controls bypassed
+- [x] Ephemeral Cloud Shell selected as the supported alternative
+- [ ] Cloud Shell opens and subscription context is verified
+- [ ] Tagged resource group is created manually in the portal
+- [ ] CLI can inspect the group and shows no child resources
+- [ ] `Microsoft.ContainerRegistry` provider is verified as registered
+- [ ] Resource group is deleted and `az group exists` returns `false`
+- [ ] Excel Day 2 row is marked `Done`, cost `$0`, and `Destroyed? = Yes`
 
 ## Day 1 — GitHub governance, Azure OIDC, and first local run
 
@@ -187,7 +526,7 @@ The learner confirmed all three repository secrets were saved. The orb's GitHub 
 cannot list Actions secret metadata (`HTTP 403`), so this step is recorded from that
 confirmation; secret values were intentionally never requested or inspected.
 
-### 8. Run and verify the local application — not started
+### 8. Run, verify, and destroy the local application — completed
 
 On the learner's computer:
 
@@ -245,6 +584,19 @@ had no `/api` proxy. The fix adds `frontend/nginx.conf` to strip `/api`, proxy t
 `api:8000`, and fall back to `index.html` for SPA routes; `frontend/Dockerfile` now copies
 that config into the image. A new frontend image must be published and pulled before the
 submission test is repeated.
+
+**Successful retest:** after PR #3 merged and the corrected frontend image was published,
+the learner pulled, retagged, and recreated the frontend. Feedback submission created job
+`5917f3bf541a473e973d97c2eb5410a7`, which reached `completed`. The fake provider returned
+positive sentiment, themes `happy`, `analyse`, and `output`, and usage of 10 prompt + 12
+completion tokens at 0 ms. This verifies the browser → nginx → API → database/Redis →
+worker → fake LLM → database → polling-browser path. Compose cleanup was completed after
+this successful test.
+
+**Cleanup verified:** `docker compose down -v` removed the project containers, network,
+and PostgreSQL test-data volume. `docker compose ps -a` and
+`docker volume ls --filter name=testing_end_to_end` both returned headings with no rows.
+Downloaded images remain as reusable, non-running local layers and incur no cloud cost.
 
 Expected running services: `db`, `redis`, `api`, `worker`, and `frontend`.
 
@@ -442,9 +794,9 @@ Keep these intentional $0 resources because later days reuse them:
 - [x] Contributor role is assigned
 - [x] `AZURE_CLIENT_ID`, `AZURE_TENANT_ID`, and `AZURE_SUBSCRIPTION_ID` are saved as
   GitHub Actions repository secrets
-- [ ] Local five-container flow passes
-- [ ] Local Compose resources and volume are destroyed
-- [ ] Excel Day 1 row is marked `Done`, cost `$0`, and `Destroyed? = Yes`
+- [x] Local five-container flow passes and a submitted job reaches `completed`
+- [x] Local Compose resources and PostgreSQL volume are destroyed and verified absent
+- [x] Excel Day 1 row is marked `Done`, cost `$0`, and `Destroyed? = Yes`
 
 ## Daily update template
 

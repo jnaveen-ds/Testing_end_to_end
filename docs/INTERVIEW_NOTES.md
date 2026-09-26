@@ -139,3 +139,60 @@ If the interviewer wants depth, they'll pick a thread — sections below cover e
   registry + logs dominate the floor (~$15–30/mo beyond free tiers).
 - LLM cost is per-token and known per job (we store it): ~$0.004 per analysis
   at gpt-5.4-mini rates (2k in / 500 out).
+
+---
+
+## App 1 real-time Chat decisions
+
+### Why is Chat synchronous while Feedback Analyzer uses a queue?
+
+The Chat user expects one answer within a normal interactive request window. Container
+Apps replicas handle concurrent short requests, so adding a queue would force a job-ID and
+polling contract without solving a current problem. The Feedback Analyzer demonstrates
+the asynchronous pattern for slower work. If Chat grows into multi-minute agent work or
+waits for a person, it should move to App 3's `202` + status + queue contract.
+
+### Why cache model responses?
+
+Model inference is slower and token-metered; a Redis lookup is much faster. A safe repeated
+prompt can return the prior answer with zero new model tokens. Caching is skipped when
+inputs are unique, answers must be immediately fresh, authorization cannot be represented
+in the key, or provisioned cache cost exceeds saved model cost.
+
+### What makes the cache key safe?
+
+`backend/app/chat.py#cache_key` hashes the tenant scope, normalized prompt, provider/model,
+prompt version, and temperature. Prompt-only keys are unsafe because they can leak results
+between tenants and keep serving old behavior after a model or system-prompt change. The
+current fixed tenant scope is deliberately a single-user learning constraint; authenticated
+tenant/user scope is required before production multi-tenancy.
+
+### How is a cache stampede prevented?
+
+Two cache checks surround a per-key lock. The first request that misses acquires the lock
+and calls the provider. Waiting requests acquire the lock later, check again, and see the
+new value. `test_concurrent_identical_misses_call_provider_once` sends 20 concurrent calls
+and proves one provider call, one MISS, and 19 HITs.
+
+### What if Redis fails?
+
+Redis is an optimization, not the source of truth. Read, write, or lock failure degrades
+to an uncached model call. That keeps the API available but can increase token cost during
+an outage, so production also needs gateway rate limits, bounded maximum replicas, model
+quota, and an alert on cache failures/hit-rate collapse.
+
+### Why show tokens, latency, cache status, and correlation ID in the lab UI?
+
+They make architecture observable. The learner can see the first MISS consume tokens and
+the second HIT consume none, distinguish model time from total request time, and match a
+browser result to server logs. A production UI may hide operational metadata while still
+recording it in telemetry.
+
+### Why support both API-key and managed-identity model authentication?
+
+Local development may use an API key stored only in an ignored `.env`, but the Container
+App should use `AZURE_OPENAI_AUTH=managed_identity`. `AzureOpenAIProvider` then requests a
+short-lived Entra token for the Cognitive Services scope through `azure-identity`; no
+model API key is present in the image or environment. The identity still needs the narrow
+Foundry/Azure OpenAI data-plane role. Authentication proves who the workload is; RBAC
+separately decides what that identity may do.

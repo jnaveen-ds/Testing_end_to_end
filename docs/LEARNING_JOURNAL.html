@@ -146,7 +146,7 @@
     .stat small { color: var(--muted); }
 
     .progress-track { height: 10px; margin-top: .8rem; overflow: hidden; border-radius: 99px; background: #dfe7f1; }
-    .progress-fill { width: 77.78%; height: 100%; border-radius: inherit; background: linear-gradient(90deg, var(--azure), var(--cyan)); }
+    .progress-fill { width: 0%; height: 100%; border-radius: inherit; background: linear-gradient(90deg, var(--azure), var(--cyan)); }
 
     .flow { display: grid; grid-template-columns: repeat(4, 1fr); gap: .8rem; }
     .flow-card { position: relative; min-width: 0; padding: 1rem; border-radius: 14px; background: var(--white); border: 1px solid var(--line); }
@@ -235,14 +235,14 @@
 <body>
   <header class="hero">
     <div class="hero-inner">
-      <p class="eyebrow">28-day hands-on roadmap</p>
-      <h1>Azure DevOps<br>Learning Journey</h1>
-      <p class="hero-copy">One small application. Many deployment paths. Every service learned manually first, automated second, and destroyed safely.</p>
+      <p class="eyebrow">Accelerated 16-hour deployment sprint</p>
+      <h1>Azure GenAI + DevOps<br>Learning Journey</h1>
+      <p class="hero-copy">Three small applications. Three production GenAI patterns. Every service learned manually first, automated second, and destroyed safely.</p>
       <div class="hero-meta">
-        <span class="pill">Day 1 · In progress</span>
-        <span class="pill">Budget · $200 Azure credit</span>
-        <span class="pill">Today · $0</span>
-        <span class="pill">Deadline · Sep 27, 2026</span>
+        <span class="pill">Two-day GenAI sprint</span>
+        <span class="pill">Credit · ₹19,109.25</span>
+        <span class="pill">Actual spend · ₹0</span>
+        <span class="pill">Destroy · Sep 27, 8 PM IST</span>
       </div>
     </div>
   </header>
@@ -250,6 +250,9 @@
   <div class="jumpbar">
     <nav aria-label="Page sections">
       <a href="#overview">Overview</a>
+      <a href="#sprint">GenAI sprint</a>
+      <a href="#app1-local">App 1 · local checkpoint</a>
+      <a href="#day2">Day 2 · Azure foundations</a>
       <a href="#flow">Learning flow</a>
       <a href="#github">GitHub</a>
       <a href="#oidc">Azure OIDC</a>
@@ -262,25 +265,186 @@
   <main>
     <section id="overview" aria-labelledby="overview-title">
       <div class="stats">
-        <article class="stat"><span class="stat-label">Day</span><strong>1 of 28</strong><small>Foundations</small></article>
-        <article class="stat"><span class="stat-label">Completed</span><strong>7 of 9</strong><div class="progress-track" aria-label="Day 1 is 78 percent complete"><div class="progress-fill"></div></div></article>
-        <article class="stat"><span class="stat-label">Azure cost today</span><strong>$0.00</strong><small>Outside $200 credit: $0</small></article>
-        <article class="stat"><span class="stat-label">Current task</span><strong>Local app</strong><small>Verify and destroy</small></article>
+        <article class="stat"><span class="stat-label">Sprint window</span><strong>16 hours</strong><small>September 26–27</small></article>
+        <article class="stat"><span class="stat-label">Blocks complete</span><strong>0 of 16</strong><div class="progress-track" aria-label="0 of 16 sprint blocks complete"><div class="progress-fill"></div></div></article>
+        <article class="stat"><span class="stat-label">Hard cost cap</span><strong>₹1,500</strong><small>Expected under ₹500</small></article>
+        <article class="stat"><span class="stat-label">Current focus</span><strong>App 1</strong><small>Local verified · Azure next</small></article>
       </div>
       <div class="section-head" style="margin-top: 2.2rem">
-        <p class="eyebrow" style="color: var(--azure)">Day 1 objective</p>
-        <h2 id="overview-title">Create a secure path from code to cloud</h2>
-        <p>Protect changes, publish deployable images, establish secretless Azure authentication, and prove the application works locally.</p>
+        <p class="eyebrow" style="color: var(--azure)">Active objective</p>
+        <h2 id="overview-title">Deploy three small apps through real GenAI platform paths</h2>
+        <p>Keep application logic simple and concentrate learning on synchronous inference, RAG, asynchronous jobs, identity, delivery, gateway policy, telemetry, recovery, and verified destruction.</p>
       </div>
     </section>
 
+    <section id="sprint" aria-labelledby="sprint-title">
+      <div class="section-head"><p class="eyebrow" style="color: var(--amber)">Schedule accelerated</p><h2 id="sprint-title">Two-day production-shaped GenAI sprint</h2><p>The portal confirms ₹19,109.25 remaining and displays September 28, 2026 as the expiry date. Because it does not promise local-midnight access, all resources must be deleted by 8:00 PM IST September 27.</p></div>
+      <div class="callout warning"><strong>September 28 is contingency, not a working day.</strong> The free offer ends after its 30-day validity period. Do not leave teardown until the displayed expiry date.</div>
+      <article class="panel">
+        <h3>Request, data, identity, and delivery flow</h3>
+        <pre><code>Client → shared React SPA → API Management
+                        ├→ App 1 FastAPI / Container Apps → Managed Redis → Foundry
+                        ├→ App 2 FastAPI / Container Apps → AI Search → Blob
+                        └→ App 3 FastAPI → Durable Functions waits for approval/TTL
+                                              └→ Service Bus → agent worker → Cosmos DB
+
+GitHub OIDC → ACR/revisions · Managed identity + RBAC · Shared App Insights/Logs</code></pre>
+        <div class="callout"><strong>Simple application rule:</strong> all three scenarios use React pages and FastAPI public APIs. The shared SPA reuses its layout, API client, status display, and styling. Browser code never talks directly to Redis, Search, Durable Functions, Service Bus, or Cosmos DB.</div>
+      </article>
+
+      <div class="section-head" style="margin-top: 2rem"><h2>The three applications</h2><p>One shared platform avoids repeating setup while each app teaches a different production behavior.</p></div>
+      <article class="panel">
+        <table>
+          <thead><tr><th>Application</th><th>Contract</th><th>Deployment lesson</th><th>AWS comparison</th></tr></thead>
+          <tbody>
+            <tr><td><strong>1 · Chat</strong><br><small>Fargate-equivalent exercise</small></td><td>React form → FastAPI <code>POST /chat</code>; cache MISS→HIT</td><td>Container Apps, Redis, ACR, Foundry, APIM, revisions, autoscaling, scale-to-zero</td><td>Bedrock + ElastiCache + ECR + ECS/Fargate + API Gateway</td></tr>
+            <tr><td><strong>2 · Document Q&amp;A</strong></td><td>React upload/question page → FastAPI → cited answer</td><td>Blob ingestion, AI Search, embeddings, grounding, Content Safety</td><td>S3 + OpenSearch/Textract + Bedrock Guardrails</td></tr>
+            <tr><td><strong>3 · Approval-gated agent</strong></td><td>React run page → FastAPI → plan → approve/reject/expire → result</td><td>Durable Functions, Service Bus, retries/dead letter, TTLs, Cosmos DB audit/status</td><td>Step Functions + Lambda + SQS + DynamoDB</td></tr>
+          </tbody>
+        </table>
+        <div class="callout"><strong>Completion standard:</strong> deploy, call, observe, deliberately break, recover, redeploy, capture evidence, and destroy each app. Repeat App 1 once from your own saved commands.</div>
+      </article>
+
+      <div class="two-col">
+        <article class="panel"><h3>Why Container Apps matches Fargate</h3><p>ECS schedules containers and Fargate supplies serverless compute. Azure Container Apps presents managed compute plus HTTPS ingress, revisions, KEDA autoscaling, logs, and scale-to-zero as one platform—without managing Kubernetes nodes.</p><p>App 1 explicitly practices image → service → revision → autoscaling → scale-to-zero → rollback.</p></article>
+        <article class="panel"><h3>Related Azure options</h3><ul><li><strong>Azure Container Instances:</strong> best for directly running a simple container, but lacks the richer API lifecycle we need.</li><li><strong>Container Apps Jobs:</strong> best for one-off, scheduled, or event-driven Fargate-style tasks.</li><li><strong>AKS:</strong> managed Kubernetes; powerful, but you manage more orchestration and it is outside this sprint.</li></ul></article>
+      </div>
+
+      <div class="section-head" style="margin-top: 2rem"><h2>Users, queues, cache, approval, and TLS</h2><p>Each mechanism solves a different production problem; none is added merely to increase the service count.</p></div>
+      <div class="two-col">
+        <article class="panel"><h3>Concurrent users + Redis</h3><p>Container Apps replicas handle short concurrent requests. Service Bus buffers long approved jobs and caps model/tool concurrency.</p><p>App 1 uses cache-aside: normalized input + tenant scope + model + prompt version + parameters → SHA-256 key. A safe cache hit saves tokens; a miss computes once. TTL controls freshness and a distributed lock prevents a cache stampede.</p><div class="callout warning">Azure Managed Redis is paid and short-lived. Legacy Azure Cache for Redis cannot be created by new public-cloud customers after April 1, 2026. Use local Redis if the portal estimate threatens the cap.</div></article>
+        <article class="panel"><h3>Human-in-the-loop agent</h3><p>FastAPI returns <code>202</code> plus a run ID. Durable Functions checkpoints the plan and waits for an external approval event without holding a request or worker.</p><p>Approve continues to Service Bus. Reject or a 10-minute durable timeout stops execution. The decision records actor, time, and immutable plan hash; duplicate decisions are idempotent.</p></article>
+      </div>
+      <div class="two-col">
+        <article class="panel"><h3>Four lifetime controls</h3><ol><li><strong>Redis TTL:</strong> cache freshness</li><li><strong>Service Bus TTL:</strong> queued-message expiry/dead letter</li><li><strong>Approval TTL:</strong> durable workflow deadline</li><li><strong>Cosmos item TTL:</strong> old lab record cleanup</li></ol><p>Worker execution uses a separate deadline and queue-lock renewal; message TTL does not terminate running code.</p></article>
+        <article class="panel"><h3>Real HTTPS, no domain purchase</h3><p>Container Apps and APIM generated hostnames have trusted Microsoft-managed certificates. We inspect the chain/expiry, enforce HTTPS, and keep the APIM backend connection encrypted.</p><p>Certificates belong at ingress—not in the FastAPI image. Custom-domain DNS and managed certificates are optional only when a domain is already owned.</p></article>
+      </div>
+
+      <div class="section-head" style="margin-top: 2rem"><h2>Why these services</h2><p>Each component owns one real GenAI production concern; unrelated infrastructure is deliberately excluded.</p></div>
+      <article class="panel">
+        <table>
+          <thead><tr><th>Concern</th><th>Selected service</th><th>Reason</th></tr></thead>
+          <tbody>
+            <tr><td>Model lifecycle</td><td>Microsoft Foundry + pay-as-you-go chat model</td><td>The platform is free; model tokens bill normally. No provisioned throughput.</td></tr>
+            <tr><td>Grounding</td><td>Blob Storage + Azure AI Search Free</td><td>Source documents, lexical retrieval, embeddings, and vector RAG inside small free quotas.</td></tr>
+            <tr><td>Application supply chain</td><td>ACR Standard grant + Container Apps</td><td>Private image, HTTPS, scale-to-zero, identity, revisions, and rollback without VM/AKS.</td></tr>
+            <tr><td>Secretless security</td><td>Managed Identity + RBAC + Key Vault</td><td>Model/data authorization without a stored cloud API key; governed fallback secrets.</td></tr>
+            <tr><td>API governance</td><td>APIM Consumption</td><td>OpenAPI import, rate limiting, and a stable gateway boundary.</td></tr>
+            <tr><td>AI safety</td><td>Content Safety F0</td><td>Prompt shields and moderation with a hard-stopping free tier.</td></tr>
+            <tr><td>Operations</td><td>Application Insights, Log Analytics, Monitor</td><td>Requests, latency, failures, logs, and alerts.</td></tr>
+            <tr><td>Delivery</td><td>GitHub Actions OIDC</td><td>Build and deploy immutable revisions without a client secret.</td></tr>
+            <tr><td>Cache</td><td>Azure Managed Redis</td><td>Token-saving cache-aside, TTL, and stampede protection; paid and short-lived.</td></tr>
+            <tr><td>Approval-gated agent</td><td>FastAPI + Durable Functions + Service Bus + Cosmos DB</td><td>Checkpointed human approval, durable timeout, load leveling, retry/dead-letter, idempotency, and audit/status.</td></tr>
+          </tbody>
+        </table>
+      </article>
+
+      <div class="two-col">
+        <article class="panel"><h3>Day A · shared platform, chat, RAG</h3><ol><li>Credit, budget, quota, providers</li><li>React + three FastAPI contracts; shared cloud services</li><li>App 1 API, React Chat page, Container Apps</li><li>Redis MISS→HIT, identity, APIM, TLS</li><li>Concurrency, stampede, restore, rollback</li><li>Repeat App 1 from saved commands</li><li>Blob, AI Search, Content Safety</li><li>App 2 API + React page, grounded/unknown answers</li></ol></article>
+        <article class="panel"><h3>Day B · agent, automation, teardown</h3><ol><li>Durable Functions, Service Bus, Cosmos TTL</li><li>App 3 FastAPI + React Agent page</li><li>Approve, reject, timeout, burst queue</li><li>Duplicate approval, expiry, retry, dead letter</li><li>Three APIM routes, HTTPS, rate limits</li><li>GitHub OIDC immutable deploys</li><li>Cross-app logs and repeat exercise</li><li>Evidence, cost, deletion proof</li></ol></article>
+      </div>
+
+      <div class="two-col">
+        <article class="panel"><h3>Cost guardrails</h3><ul><li>Expected under ₹500; hard stop at ₹1,500.</li><li>AI Search and Static Web Apps Free; ACR/Storage/Service Bus grants; APIM and Functions Consumption; Container Apps scale-to-zero; eligible Cosmos free tier.</li><li>Azure Managed Redis is paid: smallest dev/test configuration for one block only, after checking its estimate. Local Redis is the fallback.</li><li>No AKS, VM, GPU, premium gateway, private endpoint, or provisioned model throughput.</li></ul></article>
+        <article class="panel"><h3>What happens after expiry</h3><p>Pay-As-You-Go is an explicit upgrade, not automatic. Without it, the trial subscription is disabled. If upgraded, 12-month grants still run from the original signup date and always-free grants retain service-specific limits.</p><div class="callout warning">Budgets alert; they do not stop spend. Model tokens, ACR, AI Search Basic, Key Vault operations, storage, egress, and excess telemetry can bill. No upgrade is required or authorized for this sprint.</div></article>
+      </div>
+
+      <div class="section-head" style="margin-top: 2rem"><h2>Free quotas we can actually use</h2><p>These are monthly quantities, not extra rupee credit. Unused amounts do not roll over, and the exact SKU must match.</p></div>
+      <article class="panel">
+        <table>
+          <thead><tr><th>Service</th><th>Period</th><th>Included amount</th><th>Decision</th></tr></thead>
+          <tbody>
+            <tr><td>Azure AI Search</td><td>Always</td><td>50 MB, 10,000 documents, 3 indexes</td><td>Core RAG</td></tr>
+            <tr><td>Container Apps Consumption</td><td>Always</td><td>180,000 vCPU-s, 360,000 GiB-s, 2M requests/month</td><td>Core hosting</td></tr>
+            <tr><td>Static Web Apps Free</td><td>Free tier</td><td>Hosting quota shown by selected plan</td><td>Core shared React SPA</td></tr>
+            <tr><td>API Management Consumption</td><td>Monthly included</td><td>First 1M API operations/subscription/month</td><td>Core gateway</td></tr>
+            <tr><td>Content Safety F0</td><td>Free tier</td><td>5,000 text records + 5,000 images/month; hard stop</td><td>Core safety</td></tr>
+            <tr><td>Container Registry Standard</td><td>12 months</td><td>One registry, 100 GB, 10 webhooks</td><td>Core registry</td></tr>
+            <tr><td>Blob Storage Hot LRS</td><td>12 months</td><td>5 GB, 20,000 reads, 10,000 writes</td><td>Core grounding data</td></tr>
+            <tr><td>Key Vault Standard</td><td>12 months</td><td>10,000 RSA-2048 key/secret operations</td><td>Core security</td></tr>
+            <tr><td>Document Intelligence S0</td><td>12 months</td><td>500 pages</td><td>Stretch PDF extraction</td></tr>
+            <tr><td>Functions Consumption</td><td>Monthly included</td><td>1M executions + 400,000 GB-s</td><td>Core async hosting</td></tr>
+            <tr><td>Service Bus Standard</td><td>12 months</td><td>750 hours + 13M operations</td><td>Core async queue</td></tr>
+            <tr><td>Cosmos DB free tier</td><td>Always</td><td>1,000 RU/s + 25 GB when free tier is selected</td><td>Core job status; Table Storage fallback</td></tr>
+            <tr><td>Azure Managed Redis</td><td>Paid</td><td>No verified free-account allowance; hourly SKU charge</td><td>One cache block if estimate fits; local fallback</td></tr>
+            <tr><td>Foundry/OpenAI inference</td><td>Paid</td><td>No general free-token grant</td><td>Core; strict token limits</td></tr>
+            <tr><td>Azure Monitor logs</td><td>Paid ingestion</td><td>Platform metrics/activity logs have free units; log ingestion bills</td><td>Core; sample and cap</td></tr>
+          </tbody>
+        </table>
+      </article>
+      <div class="callout"><strong>Verify before creating:</strong> open <strong>Cost Management + Billing → Free services</strong>. That subscription-specific grid overrides the public marketing list. PostgreSQL and eligible VMs remain excluded because none of these three apps needs them.</div>
+    </section>
+
+    <section id="app1-local" aria-labelledby="app1-local-title">
+      <div class="section-head"><p class="eyebrow" style="color: var(--green)">September 26 · ₹0 Azure spend</p><h2 id="app1-local-title">App 1 local foundation verified</h2><p>The React/FastAPI contract was implemented and tested before opening any paid Azure meter. Azure deployment is still pending.</p></div>
+      <article class="panel">
+        <h3>Implemented request flow</h3>
+        <pre><code>React Chat → POST /api/chat → FastAPI validation → scoped SHA-256 cache key
+                                               ├─ HIT → cached answer, 0 new tokens
+                                               └─ MISS → per-key lock → recheck
+                                                                   → fake/Azure provider
+                                                                   → cache for 15 minutes</code></pre>
+        <p>The cache key includes tenant scope, normalized prompt, provider/model, prompt version, and temperature. A second lookup after lock acquisition prevents waiting requests from making duplicate model calls.</p>
+      </article>
+      <div class="two-col">
+        <article class="panel"><h3>Evidence</h3><ul class="checklist"><li class="checked">18 backend tests passed</li><li class="checked">TypeScript check and Vite production build passed</li><li class="checked">First prompt MISS with tokens; second HIT with zero new tokens</li><li class="checked">20 simultaneous identical misses → 1 provider call, 1 MISS, 19 HITs</li><li class="checked">Desktop MISS/HIT and narrow UI states visually inspected</li></ul></article>
+        <article class="panel"><h3>Honest boundary</h3><ul class="checklist"><li class="checked">React Chat page and shared shell</li><li class="checked">Dedicated FastAPI entry point and cache-aside service</li><li class="checked">Memory/Redis adapters and fake/Azure provider seam</li><li class="checked">Managed-identity token path implemented; cloud RBAC not yet assigned</li><li class="unchecked">ACR and Container Apps</li><li class="unchecked">Foundry, APIM, managed identity assignment, Managed Redis</li><li class="unchecked">Azure logs, revision/rollback, cost, and destruction proof</li></ul></article>
+      </div>
+      <div class="callout warning"><strong>Next safety gate:</strong> check subscription/region support, model availability/quota, and visible portal estimates before creation. Managed Redis is used only if its estimate fits the cap; otherwise keep the local Redis exercise.</div>
+    </section>
+
+    <section id="day2" aria-labelledby="day2-title">
+      <div class="section-head"><p class="eyebrow" style="color: var(--amber)">In progress · $0</p><h2 id="day2-title">Why Azure requires a resource group</h2><p>A resource group is a mandatory lifecycle and management boundary—not a server, network, or decorative folder.</p></div>
+      <div class="two-col">
+        <article class="panel">
+          <h3>The problem it solves</h3>
+          <p>A workload can include an app, network, database, secrets, monitoring, and identities. Putting one experiment in one resource group lets us:</p>
+          <ul><li>delete its resources as one lifecycle unit</li><li>inherit RBAC, Policy, and locks from one scope</li><li>review deployments and activity together</li><li>filter cost by resource group and tags</li></ul>
+          <div class="callout">Every Azure resource belongs to exactly one resource group. Groups cannot be nested. The group's region stores control-plane metadata; child resources may use other supported regions.</div>
+        </article>
+        <article class="panel">
+          <h3>Why today's empty group</h3>
+          <ul><li><strong>Empty:</strong> learn the boundary without a billable service.</li><li><strong>South India:</strong> consistent baseline for later regional choices.</li><li><strong><code>learn-cli-0913</code>:</strong> disposable purpose and session are visible.</li><li><strong>Expiry tag:</strong> humans and automation can identify stale experiments.</li><li><strong>Destroy today:</strong> cleanup is proven, not promised.</li></ul>
+          <p><span class="badge done">Planned cost · $0</span></p>
+        </article>
+      </div>
+
+      <div class="section-head" style="margin-top: 2rem"><h2>Azure compared with AWS</h2><p>There is no exact one-to-one AWS equivalent for an Azure resource group.</p></div>
+      <article class="panel">
+        <table>
+          <thead><tr><th>Azure</th><th>Closest AWS concept</th><th>Important distinction</th></tr></thead>
+          <tbody>
+            <tr><td>Entra tenant</td><td>AWS Organizations identity/governance layer</td><td>Different identity models; not a direct mapping.</td></tr>
+            <tr><td>Subscription</td><td>AWS account</td><td>Strong billing, quota, and access boundaries.</td></tr>
+            <tr><td>Resource group</td><td>CloudFormation stack + Resource Groups/tags + IAM scope</td><td>Azure requires this container; AWS has no universal mandatory equivalent.</td></tr>
+            <tr><td>ARM/Bicep or Terraform deployment</td><td>CloudFormation or Terraform stack</td><td>Declares and tracks infrastructure resources.</td></tr>
+            <tr><td>VNet</td><td>VPC</td><td>These are the network equivalents. A VPC is not a resource group.</td></tr>
+            <tr><td>Resource-group RBAC</td><td>IAM policy constrained to ARNs/tags</td><td>Azure permissions inherit through its native hierarchy.</td></tr>
+          </tbody>
+        </table>
+      </article>
+
+      <div class="callout warning"><strong>Managed-laptop lesson:</strong> Windows UAC rejected the Azure CLI installation because it requires an IT-approved administrator account. This is endpoint policy, not an Azure password error. Do not bypass it.</div>
+      <details open>
+        <summary>Supported alternative — ephemeral Azure Cloud Shell</summary>
+        <div>
+          <ol><li>Azure Portal top toolbar → <strong>Cloud Shell (`&gt;_`)</strong></li><li>Choose <strong>Bash</strong></li><li>Select <strong>No storage account required</strong></li><li>Select the learning subscription → <strong>Apply</strong></li></ol>
+          <p>Cloud Shell supplies an authenticated, preinstalled Azure CLI. No storage account is created, shell files disappear after closing, and today's cost remains $0. If prompted, register <code>Microsoft.CloudShell</code> under <strong>Subscriptions → Resource providers</strong>.</p>
+        </div>
+      </details>
+      <article class="panel">
+        <h3>Day 2 completion</h3>
+        <ul class="checklist"><li class="checked">Installation blocker understood; company controls not bypassed</li><li class="checked">Ephemeral Cloud Shell selected</li><li class="unchecked">Subscription context verified</li><li class="unchecked">Tagged empty resource group created manually</li><li class="unchecked">Group inspected through CLI</li><li class="unchecked"><code>Microsoft.ContainerRegistry</code> registered</li><li class="unchecked">Group deleted and existence check returns <code>false</code></li></ul>
+      </article>
+    </section>
+
     <section id="flow" aria-labelledby="flow-title">
-      <div class="section-head"><h2 id="flow-title">The learning flow</h2><p>The same repeatable pattern will guide every deployment.</p></div>
+      <div class="section-head"><p class="eyebrow" style="color: var(--green)">Day 1 complete</p><h2 id="flow-title">The learning flow</h2><p>The same repeatable pattern will guide every deployment.</p></div>
       <div class="flow">
         <article class="flow-card"><span class="badge done">Done</span><strong>1 · Govern</strong><p>Public repo, protected main, required CI.</p></article>
         <article class="flow-card"><span class="badge done">Done</span><strong>2 · Package</strong><p>Public backend and frontend images.</p></article>
         <article class="flow-card"><span class="badge done">Done</span><strong>3 · Authenticate</strong><p>GitHub OIDC to Microsoft Entra.</p></article>
-        <article class="flow-card"><span class="badge active">Now</span><strong>4 · Verify & destroy</strong><p>Run five containers, test, remove.</p></article>
+        <article class="flow-card"><span class="badge done">Done</span><strong>4 · Verify & destroy</strong><p>Five containers tested and removed.</p></article>
       </div>
     </section>
 
@@ -358,7 +522,7 @@ gh api repos/jnaveen-ds/Testing_end_to_end \
     </section>
 
     <section id="local" aria-labelledby="local-title">
-      <div class="section-head"><p class="eyebrow" style="color: #667085">Pending</p><h2 id="local-title">Run the five-container application</h2><p>Verify every hop locally before deploying the same topology to Azure.</p></div>
+      <div class="section-head"><p class="eyebrow" style="color: var(--green)">Completed and destroyed</p><h2 id="local-title">Run the five-container application</h2><p>Every hop was verified locally before deploying the same topology to Azure.</p></div>
       <div class="callout warning"><strong>First attempt:</strong> the API/worker build stopped during <code>pip install</code> with <code>CERTIFICATE_VERIFY_FAILED: self-signed certificate in certificate chain</code>. Host Python succeeds because <code>pip-system-certs</code> uses the Windows certificate store, but the isolated Linux build inherits neither that package nor the Windows trust store. The application itself had not started. Do not disable TLS or use pip <code>--trusted-host</code>.</div>
       <div class="two-col">
         <article class="panel"><h3>Start</h3><pre><code>git clone https://github.com/jnaveen-ds/Testing_end_to_end
@@ -384,6 +548,7 @@ docker compose ps</code></pre><p>This runs the same published artifacts intended
       </details>
       <div class="callout"><strong>Stack running:</strong> after Docker Desktop restarted with the <code>desktop-linux</code> context, both GHCR images pulled successfully and Compose completed <code>7/7</code>. All five services are up; PostgreSQL and Redis are healthy. Functional submission and final cleanup remain.</div>
       <div class="callout warning"><strong>Functional test found a repository bug:</strong> the SPA loaded and <code>/health</code> returned <code>{"status":"ok","provider":"fake"}</code>, but Analyze returned 404. The SPA correctly called <code>/api/analyses</code>; the nginx image had only its default static configuration. The fix adds <code>frontend/nginx.conf</code>, which strips <code>/api</code>, proxies to <code>api:8000</code>, and preserves SPA route fallback. Publish and pull the corrected frontend image before retesting.</div>
+      <div class="callout"><strong>Successful retest:</strong> after PR #3 merged and the corrected image was published, job <code>5917f3bf541a473e973d97c2eb5410a7</code> reached <code>completed</code>. It returned positive sentiment, themes <code>happy</code>, <code>analyse</code>, and <code>output</code>, and 10 prompt + 12 completion tokens at 0 ms. The complete browser-to-worker round trip is verified.</div>
       <div class="callout"><strong>Expected:</strong> <code>db</code>, <code>redis</code>, <code>api</code>, <code>worker</code>, and <code>frontend</code> are running. Submit feedback in the SPA and confirm <code>pending → completed</code>.</div>
       <div class="section-head" style="margin-top: 2rem"><h2>Docker command field guide</h2><p>The commands used to diagnose, recover, inspect, and destroy the Day 1 stack.</p></div>
       <details>
@@ -477,12 +642,13 @@ git push origin --delete &lt;short-branch-name&gt;</code></pre><p>Delete the rem
     </section>
 
     <section id="cleanup" aria-labelledby="cleanup-title">
-      <div class="section-head"><h2 id="cleanup-title">Destroy always</h2><p>Cleanup is part of deployment—not an optional final task.</p></div>
+      <div class="section-head"><p class="eyebrow" style="color: var(--green)">Verified complete</p><h2 id="cleanup-title">Destroy always</h2><p>Cleanup is part of deployment—not an optional final task.</p></div>
       <div class="two-col">
         <article class="panel"><h3>Destroy local resources</h3><pre><code>docker compose down -v
 docker compose ps</code></pre><p>The second command must show no running project services. <code>-v</code> removes the test database volume.</p></article>
         <article class="panel"><h3>Keep intentionally · $0</h3><ul><li>Entra app registration</li><li>Federated credential</li><li>Contributor assignment</li><li>GitHub Actions configuration</li><li>Public GHCR images</li></ul></article>
       </div>
+      <div class="callout"><strong>Cleanup evidence:</strong> <code>docker compose ps -a</code> and <code>docker volume ls --filter name=testing_end_to_end</code> returned headings with no rows. Containers, network, and PostgreSQL test data are gone; reusable image layers remain at $0 cloud cost.</div>
     </section>
 
     <section id="checklist" aria-labelledby="checklist-title">
@@ -496,8 +662,8 @@ docker compose ps</code></pre><p>The second command must show no running project
           <li class="checked">Immutable federated credential added</li>
           <li class="checked">Contributor role assigned</li>
           <li class="checked"><code>AZURE_CLIENT_ID</code>, <code>AZURE_TENANT_ID</code>, and <code>AZURE_SUBSCRIPTION_ID</code> saved as repository secrets</li>
-          <li class="unchecked">Local feedback flow verified</li>
-          <li class="unchecked">Local Compose stack and volume destroyed</li>
+          <li class="checked">Local feedback flow verified; submitted job reached <code>completed</code></li>
+          <li class="checked">Local Compose stack and PostgreSQL volume destroyed and verified absent</li>
         </ul>
       </article>
     </section>
@@ -505,7 +671,7 @@ docker compose ps</code></pre><p>The second command must show no running project
 
   <footer>
     <div class="footer-inner">
-      <p><strong>Source of truth:</strong> <a href="LEARNING_JOURNAL.md">LEARNING_JOURNAL.md</a></p>
+      <p><strong>Documentation order:</strong> <a href="AZURE_GENAI_BEGINNER_HANDBOOK.html">Start · Beginner handbook</a> (<a href="AZURE_GENAI_BEGINNER_HANDBOOK.docx">Word</a>) → <a href="GENAI_SOLUTION_OVERVIEW.html">1 · Problem statements and architecture</a> → <a href="GENAI_DEPLOYMENT_GUIDE.html">2 · App-by-app build and deployment</a> → <a href="LEARNING_JOURNAL.md">3 · Actual learning journal</a>.</p>
       <p><strong>Synchronization rule:</strong> every confirmed step must update the Markdown and HTML together. Never include secrets.</p>
     </div>
   </footer>
