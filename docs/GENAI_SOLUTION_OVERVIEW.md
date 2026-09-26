@@ -7,6 +7,12 @@ the problem. Read this before the app-by-app
 
 Visual version: [GENAI_SOLUTION_OVERVIEW.html](GENAI_SOLUTION_OVERVIEW.html).
 
+New to cloud deployment? Start with the plain-language
+[Azure GenAI Deployment Handbook for Beginners](AZURE_GENAI_BEGINNER_HANDBOOK.md),
+available as [visual HTML](AZURE_GENAI_BEGINNER_HANDBOOK.html) and a
+[Word document](AZURE_GENAI_BEGINNER_HANDBOOK.docx). It explains every flow and YES/NO
+scenario in full before this concise engineering reference.
+
 ## 1. Goal and design rules
 
 Build three deliberately small applications that expose three common production GenAI

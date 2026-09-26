@@ -5,6 +5,12 @@ Azure sprint. The [visual companion](GENAI_DEPLOYMENT_GUIDE.html) is optimized f
 navigation; this Markdown file is the source of truth for concepts, commands, portal
 paths, verification, troubleshooting, CI/CD, cost, and cleanup.
 
+Readers with basic Python/LLM knowledge should first read the plain-language
+[Azure GenAI Deployment Handbook for Beginners](AZURE_GENAI_BEGINNER_HANDBOOK.md),
+available as [visual HTML](AZURE_GENAI_BEGINNER_HANDBOOK.html) and a
+[Word document](AZURE_GENAI_BEGINNER_HANDBOOK.docx). The handbook explains what each
+flowchart arrow and YES/NO path means; this guide is the practical execution reference.
+
 > **Documentation rule:** a service is not “done” because the portal says deployment
 > succeeded. It is done only when its application flow is verified, logs and cost are
 > inspected, failure/recovery is exercised, evidence is captured, and the lab resource is

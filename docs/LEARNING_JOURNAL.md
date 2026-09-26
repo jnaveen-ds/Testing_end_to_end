@@ -3,6 +3,10 @@
 This is the day-by-day record of the work actually performed. It complements:
 
 - [LEARNING_JOURNAL.html](LEARNING_JOURNAL.html): responsive visual/infographic view
+- [AZURE_GENAI_BEGINNER_HANDBOOK.md](AZURE_GENAI_BEGINNER_HANDBOOK.md),
+  [visual HTML](AZURE_GENAI_BEGINNER_HANDBOOK.html), and
+  [Word document](AZURE_GENAI_BEGINNER_HANDBOOK.docx): plain-language teaching edition
+  with detailed flow and decision explanations
 - [GENAI_SOLUTION_OVERVIEW.md](GENAI_SOLUTION_OVERVIEW.md) and
   [visual overview](GENAI_SOLUTION_OVERVIEW.html): three problem statements, architecture,
   service/deployment tradeoffs, cost, latency, and security

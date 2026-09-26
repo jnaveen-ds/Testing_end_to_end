@@ -248,7 +248,7 @@ def main():
         ("Golden rule", "A day is Done only when Destroyed? = Yes (except keep-listed items)"),
         ("Your role", "Portal clicks, az commands, terraform plan review + apply, verification"),
         ("Agent's job", "TF files + exact commands prepared before each session; docs updated"),
-        ("Docs", "1) GENAI_SOLUTION_OVERVIEW.md/html · 2) GENAI_DEPLOYMENT_GUIDE.md/html · 3) LEARNING_JOURNAL.md/html"),
+        ("Docs", "Start: AZURE_GENAI_BEGINNER_HANDBOOK.md/html/docx · 1) solution overview · 2) deployment guide · 3) journal"),
         ("Paused curriculum", "The original 28-day plan remains for later; VM and AKS stages are paused"),
         ("Cost tabs", "'GenAI Sprint' tracks the active blocks; legacy Day Cost Plan is retained; Cost Log records actuals"),
     ]
